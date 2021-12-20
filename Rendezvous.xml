@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Rendezvous</name>
+    </assembly>
+    <members>
+        <member name="F:Rendezvous.Constants.rad">
+            <summary>convert a degrees value into a radians value by multiplying with this constant <see cref="F:Rendezvous.Constants.rad"/></summary>
+        </member>
+        <member name="F:Rendezvous.Constants.deg">
+            <summary>convert a radians value into a degrees value by multiplying with this constant <see cref="F:Rendezvous.Constants.deg"/></summary>
+        </member>
+        <member name="F:Rendezvous.Body.mu">
+            <summary>Standard gravitational parameter 'mu' of an <see cref="T:Rendezvous.Body"/> in [m^3/s^2]</summary>
+        </member>
+        <member name="F:Rendezvous.Body.mass">
+            <summary>Mass of an <see cref="T:Rendezvous.Body"/> in [kg]</summary>
+        </member>
+        <member name="F:Rendezvous.Body.radius">
+            <summary>Average radial distance of the surface of an <see cref="T:Rendezvous.Body"/> in [m]</summary>
+        </member>
+        <member name="M:Rendezvous.Body.#ctor(System.Single,System.Double)">
+            <summary>Constructor for an (large) orbitable Body</summary>
+            <param name="mu">Standard gravitational parameter 'mu' of an <see cref="T:Rendezvous.Body"/> in [m^3/s^2]</param>
+            <param name="radius">Average radial distance of the surface of an <see cref="T:Rendezvous.Body"/> in [m]</param>
+        </member>
+        <member name="M:Rendezvous.Body.#ctor(System.Double,System.Single)">
+            <summary>Constructor for an (large) orbitable Body</summary>
+            <param name="radius">Average radial distance of the surface of an <see cref="T:Rendezvous.Body"/> in [m]</param>
+            <param name="mass">Mass of an <see cref="T:Rendezvous.Body"/> in [kg]</param>
+        </member>
+        <member name="T:Rendezvous.Orbit">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Rendezvous.Orbit.#ctor(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,Rendezvous.Body)">
+            <summary><see cref="T:Rendezvous.Orbit"/> constructor for general Orbits, orientated in 3D</summary>
+            <param name="inc">Inclination in [degrees]</param>
+            <param name="ecc">Eccentricity of Orbit, ecc >= 0</param>
+            <param name="sma">Semi-Major-Axis of Orbit in [m]</param>
+            <param name="lan">Longitude of Ascending Node in [degrees]</param>
+            <param name="argOfPer">Argument of Periapsis in [degrees]</param>
+            <param name="tEpoch">Arbitrary timestamp to calculate time dependend values of this orbit (e.g. position, velocity etc.)</param>
+            <param name="body"><see cref="T:Rendezvous.Body"/> to be orbited around</param>
+        </member>
+        <member name="M:Rendezvous.Orbit.#ctor(Vectors.Vector3,Vectors.Vector3,System.Single,Rendezvous.Body)">
+            <summary><see cref="T:Rendezvous.Orbit"/> constructor for general Orbits, orientated in 3D, based on an initial position and velocity</summary>
+            <param name="pos">initial position of satellite in [m]</param>
+            <param name="vel">initial velocity of satellite in [m/s]</param>
+            <param name="tEpoch">Arbitrary timestamp to calculate time dependend parameters of this orbit (e.g. position, velocity, flight angle etc.)</param>
+            <param name="body"><see cref="T:Rendezvous.Body"/> to be orbited around</param>
+        </member>
+        <member name="M:Rendezvous.Orbit.calculate_Period(System.Single,System.Single)">
+            <summary>Calculate the time an satellite takes to make one revolution on an <see cref="T:Rendezvous.Orbit"/></summary>
+            <param name="sma">Semi-Major-Axis of Orbit in [m]</param>
+            <param name="mu">Standard gravitational parameter 'mu'(<seealso cref="F:Rendezvous.Body.mu"/>) of an <see cref="T:Rendezvous.Body"/> in [m^3/s^2]</param>
+            <returns>Orbits Period in seconds</returns>
+        </member>
+        <member name="M:Rendezvous.Orbit.altitude(System.Single,System.Single,System.Single,System.Single)">
+            <summary>Calculate the radial distance of a satellite at a given True Anomaly</summary>
+            <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
+            <param name="h">Angular momentum in [m^2/s]</param>
+            <param name="ecc">Eccentricity of Orbit, ecc >= 0</param>
+            <param name="mu">Standard gravitational parameter 'mu'(<seealso cref="F:Rendezvous.Body.mu"/>) of an <see cref="T:Rendezvous.Body"/> in [m^3/s^2]</param>
+            <returns>The radial distance for the given True Anomaly</returns>
+        </member>
+        <member name="M:Rendezvous.Orbit.flight_angle(System.Single,System.Single)">
+            <summary>Calculate the angle of the velocity to the local horzion at a True Anomaly</summary>
+            <param name="ecc">Eccentricity of Orbit, ecc >= 0</param>
+            <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
+            <returns>Flight angle in [Degrees]</returns>
+        </member>
+        <member name="M:Rendezvous.Orbit.calculate_semiMinorAxis(System.Single,System.Single)">
+            <summary>Calculate the Semi Minor Axis of an <see cref="T:Rendezvous.Orbit"/></summary>
+            <param name="sma">Semi-Major-Axis of Orbit in [m]</param>
+            <returns>Semi-Minor-Axis in [m]</returns>
+        </member>
+        <member name="M:Rendezvous.Orbit.calculate_angularMomentum(System.Single,System.Single,System.Single)">
+            <summary>Calculate the Angular Momentum</summary>
+            <param name="ecc">Semi-Major-Axis of Orbit in [m]</param>
+            <param name="ecc">Eccentricity of Orbit, ecc >= 0</param>
+            <param name="mu">Standard gravitational parameter 'mu'(<seealso cref="F:Rendezvous.Body.mu"/>) of an <see cref="T:Rendezvous.Body"/> in [m^3/s^2]</param>
+            <returns>Angular momentum in [m^2/s]</returns>
+        </member>
+        <member name="M:Rendezvous.Orbit.altitude(System.Single)">
+            <summary>Calculate the radial distance of a satellite at a given True Anomaly</summary>
+            <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
+            <returns>The radial distance for the given True Anomaly</returns>
+        </member>
+        <member name="M:Rendezvous.Orbit.flight_angle(System.Single)">
+            <summary>Calculate the angle of the velocity to the local horzion at a True Anomaly</summary>
+            <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
+            <returns>Flight angle in [Degrees]</returns>
+        </member>
+        <member name="M:Rendezvous.Orbit.tangential_velocity(System.Single)">
+            <summary>Calculates the velocity tangential to the Flight Path</summary>
+            <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
+            <returns>Tangential velocity in [m/s]</returns>
+        </member>
+        <member name="M:Rendezvous.Orbit.radial_velocity(System.Single)">
+            <summary>Calculates the velocity radial outwards to the Flight Path</summary>
+            <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
+            <returns>Radial outwards velocity in [m/s]</returns>
+        </member>
+        <member name="M:Rendezvous.Orbit.velocities_tangential_radial(System.Single)">
+            <summary>Calculates the velocity Tuple (tangetial, radial outwards) to the Flight Path</summary>
+            <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
+            <returns>(tangetial velocity, radial outwards velocity) in [m/s]</returns>
+        </member>
+    </members>
+</doc>

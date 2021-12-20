@@ -1,0 +1,151 @@
+﻿|                   Method |   meanAno | ecc |       Mean |    Error |   StdDev |     Median |  Gen 0 | Allocated |
+|------------------------- |---------- |---- |-----------:|---------:|---------:|-----------:|-------:|----------:|
+|        eccAnomaly_Bassel |         0 |   0 |   306.6 ns |  3.09 ns |  2.89 ns |   307.6 ns |      - |         - |
+| eccAnomaly_Bassel_Newton |         0 |   0 |   435.7 ns |  8.26 ns |  8.48 ns |   433.0 ns | 0.0381 |     320 B |
+|        eccAnomaly_Newton |         0 |   0 |   181.2 ns |  1.56 ns |  1.30 ns |   181.5 ns | 0.0553 |     464 B |
+|        eccAnomaly_Secant |         0 |   0 |   219.7 ns |  2.28 ns |  2.13 ns |   219.4 ns | 0.0706 |     592 B |
+
+|        eccAnomaly_Bassel |         0 | 0.5 |   330.7 ns |  4.58 ns |  4.06 ns |   331.0 ns |      - |         - |
+| eccAnomaly_Bassel_Newton |         0 | 0.5 |   444.7 ns |  2.70 ns |  2.25 ns |   445.1 ns | 0.0381 |     320 B |
+|        eccAnomaly_Newton |         0 | 0.5 |   383.0 ns |  2.42 ns |  2.15 ns |   382.8 ns | 0.1068 |     896 B |
+|        eccAnomaly_Secant |         0 | 0.5 |   215.9 ns |  2.75 ns |  2.57 ns |   215.6 ns | 0.0706 |     592 B |
+
+|        eccAnomaly_Bassel |         0 | 0.8 |   311.4 ns |  5.88 ns |  5.21 ns |   310.7 ns |      - |         - |
+| eccAnomaly_Bassel_Newton |         0 | 0.8 |   435.9 ns |  8.55 ns |  9.50 ns |   435.6 ns | 0.0381 |     320 B |
+|        eccAnomaly_Newton |         0 | 0.8 |   466.1 ns |  9.23 ns | 13.82 ns |   462.5 ns | 0.1240 |   1,040 B |
+|        eccAnomaly_Secant |         0 | 0.8 |   212.3 ns |  2.12 ns |  1.77 ns |   212.3 ns | 0.0706 |     592 B |
+
+|        eccAnomaly_Bassel |         0 |   1 |   321.1 ns |  6.06 ns |  5.95 ns |   322.9 ns |      - |         - |
+| eccAnomaly_Bassel_Newton |         0 |   1 |   449.6 ns |  3.08 ns |  2.73 ns |   449.1 ns | 0.0381 |     320 B |
+|        eccAnomaly_Newton |         0 |   1 | 1,631.7 ns | 31.48 ns | 54.31 ns | 1,607.2 ns | 0.3986 |   3,344 B |
+|        eccAnomaly_Secant |         0 |   1 |   218.1 ns |  4.34 ns |  6.62 ns |   215.2 ns | 0.0706 |     592 B |
+
+|        eccAnomaly_Bassel | 1.5707964 |   0 |   309.8 ns |  2.94 ns |  2.75 ns |   310.6 ns |      - |         - |
+| eccAnomaly_Bassel_Newton | 1.5707964 |   0 |   461.2 ns |  9.06 ns |  8.90 ns |   458.5 ns | 0.0381 |     320 B |
+|        eccAnomaly_Newton | 1.5707964 |   0 |   203.6 ns |  3.98 ns |  4.59 ns |   202.6 ns | 0.0553 |     464 B |
+|        eccAnomaly_Secant | 1.5707964 |   0 |   245.3 ns |  4.81 ns |  4.72 ns |   245.9 ns | 0.0706 |     592 B |
+
+|        eccAnomaly_Bassel | 1.5707964 | 0.5 |   342.5 ns |  3.45 ns |  3.23 ns |   342.0 ns |      - |         - |
+| eccAnomaly_Bassel_Newton | 1.5707964 | 0.5 |   645.2 ns | 12.30 ns | 11.50 ns |   649.8 ns | 0.0725 |     608 B |
+|        eccAnomaly_Newton | 1.5707964 | 0.5 |   359.1 ns |  5.12 ns |  4.28 ns |   360.1 ns | 0.0896 |     752 B |
+|        eccAnomaly_Secant | 1.5707964 | 0.5 |   568.6 ns |  2.98 ns |  2.79 ns |   569.3 ns | 0.1478 |   1,240 B |
+
+|        eccAnomaly_Bassel | 1.5707964 | 0.8 |   308.3 ns |  2.88 ns |  2.55 ns |   307.4 ns |      - |         - |
+| eccAnomaly_Bassel_Newton | 1.5707964 | 0.8 |   621.1 ns | 12.31 ns | 21.56 ns |   623.5 ns | 0.0725 |     608 B |
+|        eccAnomaly_Newton | 1.5707964 | 0.8 |   334.6 ns |  2.12 ns |  1.88 ns |   334.4 ns | 0.0896 |     752 B |
+|        eccAnomaly_Secant | 1.5707964 | 0.8 |   630.8 ns |  3.63 ns |  3.22 ns |   631.4 ns | 0.1736 |   1,456 B |
+
+|        eccAnomaly_Bassel | 1.5707964 |   1 |   332.5 ns |  1.80 ns |  1.69 ns |   332.0 ns |      - |         - |
+| eccAnomaly_Bassel_Newton | 1.5707964 |   1 |   625.0 ns |  3.55 ns |  3.32 ns |   625.7 ns | 0.0725 |     608 B |
+|        eccAnomaly_Newton | 1.5707964 |   1 |   354.4 ns |  3.99 ns |  3.33 ns |   353.5 ns | 0.0896 |     752 B |
+|        eccAnomaly_Secant | 1.5707964 |   1 |   669.6 ns |  3.73 ns |  3.49 ns |   669.9 ns | 0.1736 |   1,456 B |
+
+|        eccAnomaly_Bassel | 2.7318199 |   0 |   313.2 ns |  1.52 ns |  1.43 ns |   313.4 ns |      - |         - |
+| eccAnomaly_Bassel_Newton | 2.7318199 |   0 |   443.2 ns |  3.08 ns |  2.57 ns |   442.2 ns | 0.0381 |     320 B |
+|        eccAnomaly_Newton | 2.7318199 |   0 |   185.9 ns |  1.24 ns |  1.16 ns |   185.8 ns | 0.0553 |     464 B |
+|        eccAnomaly_Secant | 2.7318199 |   0 |   221.0 ns |  1.11 ns |  1.04 ns |   221.2 ns | 0.0706 |     592 B |
+
+|        eccAnomaly_Bassel | 2.7318199 | 0.5 |   332.2 ns |  3.50 ns |  2.92 ns |   333.5 ns |      - |         - |
+| eccAnomaly_Bassel_Newton | 2.7318199 | 0.5 |   624.4 ns |  1.51 ns |  1.34 ns |   624.5 ns | 0.0725 |     608 B |
+|        eccAnomaly_Newton | 2.7318199 | 0.5 |   267.5 ns |  0.98 ns |  0.82 ns |   267.5 ns | 0.0725 |     608 B |
+|        eccAnomaly_Secant | 2.7318199 | 0.5 |   513.4 ns |  2.30 ns |  2.16 ns |   513.6 ns | 0.1478 |   1,240 B |
+
+|        eccAnomaly_Bassel | 2.7318199 | 0.8 |   317.3 ns |  0.97 ns |  0.91 ns |   317.0 ns |      - |         - |
+| eccAnomaly_Bassel_Newton | 2.7318199 | 0.8 |   621.0 ns | 12.00 ns | 16.82 ns |   618.7 ns | 0.0725 |     608 B |
+|        eccAnomaly_Newton | 2.7318199 | 0.8 |   273.2 ns |  4.95 ns |  5.89 ns |   271.2 ns | 0.0725 |     608 B |
+|        eccAnomaly_Secant | 2.7318199 | 0.8 |   514.0 ns |  3.02 ns |  2.36 ns |   513.8 ns | 0.1478 |   1,240 B |
+
+|        eccAnomaly_Bassel | 2.7318199 |   1 |   333.0 ns |  1.56 ns |  1.38 ns |   333.1 ns |      - |         - |
+| eccAnomaly_Bassel_Newton | 2.7318199 |   1 |   625.1 ns |  2.79 ns |  2.33 ns |   625.1 ns | 0.0725 |     608 B |
+|        eccAnomaly_Newton | 2.7318199 |   1 |   266.8 ns |  1.45 ns |  1.29 ns |   266.6 ns | 0.0725 |     608 B |
+|        eccAnomaly_Secant | 2.7318199 |   1 |   609.4 ns |  6.19 ns |  5.79 ns |   607.3 ns | 0.1736 |   1,456 B |
+
+|        eccAnomaly_Bassel | 6.2831855 |   0 |   312.3 ns |  2.97 ns |  2.78 ns |   312.8 ns |      - |         - |
+| eccAnomaly_Bassel_Newton | 6.2831855 |   0 |   438.5 ns |  1.15 ns |  1.08 ns |   438.5 ns | 0.0381 |     320 B |
+|        eccAnomaly_Newton | 6.2831855 |   0 |   183.6 ns |  1.09 ns |  0.97 ns |   183.5 ns | 0.0553 |     464 B |
+|        eccAnomaly_Secant | 6.2831855 |   0 |   127.6 ns |  1.50 ns |  1.41 ns |   127.7 ns | 0.0449 |     376 B |
+
+|        eccAnomaly_Bassel | 6.2831855 | 0.5 |   340.9 ns |  3.26 ns |  3.05 ns |   341.9 ns |      - |         - |
+| eccAnomaly_Bassel_Newton | 6.2831855 | 0.5 |   467.0 ns |  1.35 ns |  1.05 ns |   467.1 ns | 0.0381 |     320 B |
+|        eccAnomaly_Newton | 6.2831855 | 0.5 |   416.5 ns |  2.98 ns |  2.49 ns |   416.1 ns | 0.1068 |     896 B |
+|        eccAnomaly_Secant | 6.2831855 | 0.5 |   126.8 ns |  1.28 ns |  1.13 ns |   126.4 ns | 0.0449 |     376 B |
+
+|        eccAnomaly_Bassel | 6.2831855 | 0.8 |   314.9 ns |  3.72 ns |  3.30 ns |   315.8 ns |      - |         - |
+| eccAnomaly_Bassel_Newton | 6.2831855 | 0.8 |   449.7 ns |  1.58 ns |  1.32 ns |   449.4 ns | 0.0381 |     320 B |
+|        eccAnomaly_Newton | 6.2831855 | 0.8 |   483.7 ns |  2.42 ns |  2.02 ns |   484.0 ns | 0.1240 |   1,040 B |
+|        eccAnomaly_Secant | 6.2831855 | 0.8 |   125.7 ns |  0.66 ns |  0.58 ns |   125.7 ns | 0.0449 |     376 B |
+
+|        eccAnomaly_Bassel | 6.2831855 |   1 |   332.7 ns |  1.03 ns |  0.91 ns |   332.5 ns |      - |         - |
+| eccAnomaly_Bassel_Newton | 6.2831855 |   1 |   463.5 ns |  1.75 ns |  1.55 ns |   463.3 ns | 0.0381 |     320 B |
+|        eccAnomaly_Newton | 6.2831855 |   1 | 1,111.8 ns |  9.29 ns |  8.24 ns | 1,109.2 ns | 0.2785 |   2,336 B |
+|        eccAnomaly_Secant | 6.2831855 |   1 |   126.3 ns |  1.13 ns |  0.88 ns |   126.6 ns | 0.0449 |     376 B |
+
+
+===================================================================================================================
+
+
+|                Method |   meanAno | ecc |       Mean |    Error |   StdDev |  Gen 0 | Allocated |
+|---------------------- |---------- |---- |-----------:|---------:|---------:|-------:|----------:|
+| eccAnomaly_LIT_Newton |         0 |   0 |   170.5 ns |  0.42 ns |  0.39 ns | 0.0381 |     320 B |
+|     eccAnomaly_Newton |         0 |   0 |   178.4 ns |  2.55 ns |  2.26 ns | 0.0553 |     464 B |
+|     eccAnomaly_Secant |         0 |   0 |   214.4 ns |  3.94 ns |  3.50 ns | 0.0706 |     592 B |
+
+| eccAnomaly_LIT_Newton |         0 | 0.5 |   305.6 ns |  5.57 ns |  5.21 ns | 0.0725 |     608 B |
+|     eccAnomaly_Newton |         0 | 0.5 |   377.6 ns |  5.19 ns |  4.85 ns | 0.1068 |     896 B |
+|     eccAnomaly_Secant |         0 | 0.5 |   214.5 ns |  2.75 ns |  2.57 ns | 0.0706 |     592 B |
+
+| eccAnomaly_LIT_Newton |         0 | 0.8 |   365.4 ns |  3.30 ns |  3.09 ns | 0.0896 |     752 B |
+|     eccAnomaly_Newton |         0 | 0.8 |   433.6 ns |  1.44 ns |  1.35 ns | 0.1240 |   1,040 B |
+|     eccAnomaly_Secant |         0 | 0.8 |   212.5 ns |  1.88 ns |  1.67 ns | 0.0706 |     592 B |
+
+| eccAnomaly_LIT_Newton |         0 |   1 | 1,348.2 ns | 22.93 ns | 21.45 ns | 0.3471 |   2,912 B |
+|     eccAnomaly_Newton |         0 |   1 | 1,519.0 ns |  3.65 ns |  3.24 ns | 0.3986 |   3,344 B |
+|     eccAnomaly_Secant |         0 |   1 |   213.4 ns |  2.57 ns |  2.00 ns | 0.0706 |     592 B |
+
+| eccAnomaly_LIT_Newton | 1.5707964 |   0 |   180.6 ns |  0.53 ns |  0.49 ns | 0.0381 |     320 B |
+|     eccAnomaly_Newton | 1.5707964 |   0 |   181.6 ns |  1.57 ns |  1.46 ns | 0.0553 |     464 B |
+|     eccAnomaly_Secant | 1.5707964 |   0 |   222.0 ns |  2.90 ns |  2.71 ns | 0.0706 |     592 B |
+
+| eccAnomaly_LIT_Newton | 1.5707964 | 0.5 |   249.8 ns |  3.00 ns |  2.66 ns | 0.0553 |     464 B |
+|     eccAnomaly_Newton | 1.5707964 | 0.5 |   321.6 ns |  1.84 ns |  1.63 ns | 0.0896 |     752 B |
+|     eccAnomaly_Secant | 1.5707964 | 0.5 |   524.8 ns |  8.49 ns |  7.52 ns | 0.1478 |   1,240 B |
+
+| eccAnomaly_LIT_Newton | 1.5707964 | 0.8 |   247.6 ns |  2.36 ns |  1.97 ns | 0.0553 |     464 B |
+|     eccAnomaly_Newton | 1.5707964 | 0.8 |   321.0 ns |  1.52 ns |  1.35 ns | 0.0896 |     752 B |
+|     eccAnomaly_Secant | 1.5707964 | 0.8 |   610.2 ns |  1.76 ns |  1.47 ns | 0.1736 |   1,456 B |
+
+| eccAnomaly_LIT_Newton | 1.5707964 |   1 |   251.3 ns |  3.73 ns |  3.49 ns | 0.0553 |     464 B |
+|     eccAnomaly_Newton | 1.5707964 |   1 |   352.7 ns |  7.05 ns | 11.39 ns | 0.0896 |     752 B |
+|     eccAnomaly_Secant | 1.5707964 |   1 |   656.2 ns |  2.72 ns |  2.27 ns | 0.1736 |   1,456 B |
+
+| eccAnomaly_LIT_Newton | 2.7318199 |   0 |   180.3 ns |  2.83 ns |  2.65 ns | 0.0381 |     320 B |
+|     eccAnomaly_Newton | 2.7318199 |   0 |   182.3 ns |  3.03 ns |  2.84 ns | 0.0553 |     464 B |
+|     eccAnomaly_Secant | 2.7318199 |   0 |   218.4 ns |  2.42 ns |  2.14 ns | 0.0706 |     592 B |
+
+| eccAnomaly_LIT_Newton | 2.7318199 | 0.5 |   247.1 ns |  1.39 ns |  1.08 ns | 0.0553 |     464 B |
+|     eccAnomaly_Newton | 2.7318199 | 0.5 |   259.3 ns |  4.55 ns |  3.80 ns | 0.0725 |     608 B |
+|     eccAnomaly_Secant | 2.7318199 | 0.5 |   508.9 ns |  5.32 ns |  4.71 ns | 0.1478 |   1,240 B |
+
+| eccAnomaly_LIT_Newton | 2.7318199 | 0.8 |   179.9 ns |  2.77 ns |  2.59 ns | 0.0381 |     320 B |
+|     eccAnomaly_Newton | 2.7318199 | 0.8 |   265.6 ns |  4.87 ns |  4.55 ns | 0.0725 |     608 B |
+|     eccAnomaly_Secant | 2.7318199 | 0.8 |   504.5 ns |  4.01 ns |  3.55 ns | 0.1478 |   1,240 B |
+
+| eccAnomaly_LIT_Newton | 2.7318199 |   1 |   181.3 ns |  3.46 ns |  3.07 ns | 0.0381 |     320 B |
+|     eccAnomaly_Newton | 2.7318199 |   1 |   262.6 ns |  5.16 ns |  6.14 ns | 0.0725 |     608 B |
+|     eccAnomaly_Secant | 2.7318199 |   1 |   636.5 ns |  4.68 ns |  3.91 ns | 0.1736 |   1,456 B |
+
+| eccAnomaly_LIT_Newton | 6.2831855 |   0 |   188.5 ns |  1.42 ns |  1.26 ns | 0.0381 |     320 B |
+|     eccAnomaly_Newton | 6.2831855 |   0 |   188.4 ns |  1.09 ns |  1.02 ns | 0.0553 |     464 B |
+|     eccAnomaly_Secant | 6.2831855 |   0 |   128.3 ns |  0.97 ns |  0.91 ns | 0.0449 |     376 B |
+
+| eccAnomaly_LIT_Newton | 6.2831855 | 0.5 |   342.6 ns |  1.48 ns |  1.31 ns | 0.0725 |     608 B |
+|     eccAnomaly_Newton | 6.2831855 | 0.5 |   415.2 ns |  2.78 ns |  2.46 ns | 0.1068 |     896 B |
+|     eccAnomaly_Secant | 6.2831855 | 0.5 |   129.3 ns |  1.92 ns |  1.79 ns | 0.0449 |     376 B |
+
+| eccAnomaly_LIT_Newton | 6.2831855 | 0.8 |   405.9 ns |  2.67 ns |  2.49 ns | 0.0896 |     752 B |
+|     eccAnomaly_Newton | 6.2831855 | 0.8 |   500.0 ns |  9.62 ns | 12.84 ns | 0.1240 |   1,040 B |
+|     eccAnomaly_Secant | 6.2831855 | 0.8 |   129.1 ns |  1.11 ns |  1.03 ns | 0.0449 |     376 B |
+
+| eccAnomaly_LIT_Newton | 6.2831855 |   1 | 1,036.9 ns |  7.33 ns |  6.86 ns | 0.2441 |   2,048 B |
+|     eccAnomaly_Newton | 6.2831855 |   1 | 1,110.9 ns | 10.92 ns | 10.21 ns | 0.2785 |   2,336 B |
+|     eccAnomaly_Secant | 6.2831855 |   1 |   129.2 ns |  2.48 ns |  4.00 ns | 0.0449 |     376 B |
