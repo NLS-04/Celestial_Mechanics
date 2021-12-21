@@ -33,25 +33,25 @@ namespace Rendezvous {
 		/// <param name="mu">Standard gravitational parameter 'mu' of <see langword="this"/> <see cref="Body"/> in [m^3/s^2]</param>
 		/// <param name="radius">Average radial distance of the surface of <see langword="this"/> <see cref="Body"/> in [m]</param>
 		/// <param name="orient">A struct to orientate a coordinate system of <see langword="this"/> <see cref="Body"/>; if its <see langword="null"/> the <see cref="Body.orientation"/> is set to the <see cref="defaultDirection"/></param>
-		public Body(float mu, double radius, Direction? orient=null ) {
+		public Body( float mu, double radius /*, Direction? orient=null*/ ) {
 			this.mu     = mu;
 			this.mass   = mu / Constants.G;
 			this.radius = radius;
-			this.orientation = orient ?? Direction.defaultDirection;
+			//this.orientation = orient ?? Direction.defaultDirection;
 		}
 
 		/// <summary>Constructor for an (large) orbitable Body</summary>
 		/// <param name="radius">Average radial distance of the surface of <see langword="this"/> <see cref="Body"/> in [m]</param>
 		/// <param name="mass">Mass of <see langword="this"/> <see cref="Body"/> in [kg]</param>
 		/// <param name="orient">A struct to orientate a coordinate system of <see langword="this"/> <see cref="Body"/>; if its <see langword="null"/> the <see cref="Body.orientation"/> is set to the <see cref="defaultDirection"/></param>
-		public Body(double radius, float mass, Direction? orient=null ) {
+		public Body( double radius, float mass /*, Direction? orient=null*/ ) {
 			this.mass   = mass;
 			this.mu     = mass * Constants.G;
 			this.radius = radius;
-			this.orientation = orient ?? Direction.defaultDirection;
+			//this.orientation = orient ?? Direction.defaultDirection;
 		}
 
-		public readonly static Body KERBIN = new Body( 3.5316E12f,		600_000d   );
+		public readonly static Body KERBIN = new Body( 3.5316E12f,      600_000d   );
 		public readonly static Body EARTH  = new Body( 3.986004418E14f, 6_371_000d );
 		public readonly static Body MARS   = new Body( 4.282837E13f,	3_389_500d );
 
@@ -76,7 +76,7 @@ namespace Rendezvous {
 		 */
 
 		/* All (readable) angle Values are in [DEGREES] but are internaly converted and calculated as [RADIANS] */
-		
+
 		public Body body;
 
 		// vectors are normalized, values are stored at their associativ double variable
@@ -193,24 +193,41 @@ namespace Rendezvous {
 
 		#region static_methods
 		/// <summary>Calculate the time an satellite takes to make one revolution on an <see cref="Orbit"/></summary>
-		/// <param name="sma">Semi-Major-Axis of Orbit in [m]</param>
-		/// <param name="mu">Standard gravitational parameter 'mu'(<seealso cref="Body.mu"/>) of an <see cref="Body"/> in [m^3/s^2]</param>
-		/// <returns>Orbits Period in seconds</returns>
+		/// <param name="sma">Semi-Major-Axis of Orbit in [meters]</param>
+		/// <param name="mu">Standard gravitational parameter 'mu'(<seealso cref="Body.mu"/>) of an <see cref="Body"/> in [meters^3/seconds^2]</param>
+		/// <returns>Orbits Period in [seconds]</returns>
 		public static double calculate_Period( double sma, double mu ) {
 			return 2 * Constants.pi * Sqrt( Pow( sma, 3 ) / mu );
 		}
 
+		/// <summary>Calculate the Angular Momentum</summary>
+		/// <param name="sma">Semi-Major-Axis of Orbit in [meters]</param>
+		/// <param name="ecc">Eccentricity of Orbit, ecc >= 0</param>
+		/// <param name="mu">Standard gravitational parameter 'mu'(<seealso cref="Body.mu"/>) of an <see cref="Body"/> in [meters^3/seconds^2]</param>
+		/// <returns>Angular momentum in [meters^2/seconds]</returns>
+		public static double calculate_angularMomentum( double sma, double ecc, double mu ) {
+			return Sqrt( sma * mu * ( 1 - ecc * ecc ) );
+		}
+
+		/// <summary>Calculate the Semi Minor Axis of an <see cref="Orbit"/></summary>
+		/// <param name="sma">Semi-Major-Axis of Orbit in [meters]</param>
+		/// <returns>Semi-Minor-Axis in [meters]</returns>
+		public static double calculate_semiMinorAxis( double sma, double ecc ) {
+			return sma * Sqrt( 1 - ecc * ecc );
+		}
+
+
 		/// <summary>Calculate the radial distance of a satellite at a given True Anomaly</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
-		/// <param name="h">Angular momentum in [m^2/s]</param>
+		/// <param name="h">Angular momentum in [meters^2/seconds]</param>
 		/// <param name="ecc">Eccentricity of Orbit, ecc >= 0</param>
-		/// <param name="mu">Standard gravitational parameter 'mu'(<seealso cref="Body.mu"/>) of an <see cref="Body"/> in [m^3/s^2]</param>
-		/// <returns>The radial distance for the given True Anomaly</returns>
+		/// <param name="mu">Standard gravitational parameter 'mu'(<seealso cref="Body.mu"/>) of an <see cref="Body"/> in [meters^3/seconds^2]</param>
+		/// <returns>The radial distance in [seconds]</returns>
 		public static double altitude( double trueAnomaly, double h, double ecc, double mu ) {
 			return h * h / ( mu * ( 1 + ecc * Cos( trueAnomaly * Constants.rad ) ) );
 		}
 
-		/// <summary>Calculate the angle of the velocity to the local horzion at a True Anomaly</summary>
+		/// <summary>Calculate the angle of the velocity Vector to the local horzion Plane at a True Anomaly</summary>
 		/// <param name="ecc">Eccentricity of Orbit, ecc >= 0</param>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
 		/// <returns>Flight angle in [Degrees]</returns>
@@ -219,62 +236,46 @@ namespace Rendezvous {
 			return Atan( ecc * Sin( trueAnomaly ) / ( 1 + ecc * Cos( trueAnomaly ) ) ) * Constants.deg;
 		}
 
-		/// <summary>Calculate the Semi Minor Axis of an <see cref="Orbit"/></summary>
-		/// <param name="sma">Semi-Major-Axis of Orbit in [m]</param>
-		/// <returns>Semi-Minor-Axis in [m]</returns>
-		public static double calculate_semiMinorAxis( double sma, double ecc ) {
-			return sma * Sqrt( 1 - ecc * ecc );
-		}
 
-		/// <summary>Calculate the Angular Momentum</summary>
-		/// <param name="ecc">Semi-Major-Axis of Orbit in [m]</param>
-		/// <param name="ecc">Eccentricity of Orbit, ecc >= 0</param>
-		/// <param name="mu">Standard gravitational parameter 'mu'(<seealso cref="Body.mu"/>) of an <see cref="Body"/> in [m^3/s^2]</param>
-		/// <returns>Angular momentum in [m^2/s]</returns>
-		public static double calculate_angularMomentum( double sma, double ecc, double mu ) {
-			return Sqrt( sma * mu * ( 1 - ecc * ecc ) );
-		}
-
-
-		/// <summary>calculates the Eccentricity Anomaly for a given True Anomaly</summary>
+		/// <summary>Calculate the Eccentricity Anomaly for a given True Anomaly</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
 		/// <param name="ecc">Eccentricity of Orbit, ecc >= 0</param>
-		/// <returns>the Eccentricity Anomaly in [radians]</returns>
+		/// <returns>The Eccentricity Anomaly in !! [radians] !!</returns>
 		public static double eccentricityAnomaly( double trueAnomaly, double ecc ) {
 			// the Eccentricity Anomaly in [radians]
 			return 2.0d * Atan( Sqrt( ( 1.0d - ecc ) / ( 1.0d + ecc ) ) * Tan( .5d * trueAnomaly * Constants.rad ) );
 		}
 
-		/// <summary>calculates the Mean Anomaly for a given Eccentricity Anomaly</summary>
-		/// <param name="E">the Eccentricity Anomaly in [radians]</param>
+		/// <summary>Calculate the Mean Anomaly for a given Eccentricity Anomaly</summary>
+		/// <param name="E">The Eccentricity Anomaly in [radians]</param>
 		/// <param name="ecc">Eccentricity of Orbit, ecc >= 0</param>
-		/// <returns>the Mean Anomaly in [degrees]</returns>
+		/// <returns>The Mean Anomaly in [degrees]</returns>
 		public static double meanAnomaly_from_eccentricityAnomaly( double E, double ecc ) {
 			return (E - ecc * Sin( E )) * Constants.deg; // E in radians, returns in deg
 		}
 
-		/// <summary>calculates the Mean Anomaly for a given True Anomaly</summary>
+		/// <summary>Calculate the Mean Anomaly for a given True Anomaly</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
 		/// <param name="ecc">Eccentricity of Orbit, ecc >= 0</param>
-		/// <returns>the Mean Anomaly in [degrees]</returns>
+		/// <returns>The Mean Anomaly in [degrees]</returns>
 		public static double meanAnomaly( double trueAnomaly, double ecc ) {
 			return meanAnomaly_from_eccentricityAnomaly( eccentricityAnomaly( trueAnomaly, ecc ), ecc );
 		}
 
 
-		/// <summary>calculates the time since periapsis for a given Mean Anomaly</summary>
-		/// <param name="meanAnomaly">the Mean Anomaly in [degrees]</param>
-		/// <param name="period">the orbits Period time in [seconds]</param>
-		/// <returns>the time that past since periapsis passage in  [seconds]</returns>
+		/// <summary>Calculate the time since periapsis for a given Mean Anomaly</summary>
+		/// <param name="meanAnomaly">The Mean Anomaly in [degrees]</param>
+		/// <param name="period">The orbits Period time in [seconds]</param>
+		/// <returns>The time that passed since periapsis passage in [seconds]</returns>
 		public static double meanAnomaly_to_time( double meanAnomaly, double period ) {
 			return period * meanAnomaly*Constants.rad / Constants.tau;
 		}
 
-		/// <summary>calculates the time since periapsis for a given True Anomaly</summary>
+		/// <summary>Calculate the time since periapsis for a given True Anomaly</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
 		/// <param name="ecc">Eccentricity of Orbit, ecc >= 0</param>
-		/// <param name="period">the orbits Period time in [seconds]</param>
-		/// <returns>the time that past since periapsis passage in  [seconds]</returns>
+		/// <param name="period">The orbits Period time in [seconds]</param>
+		/// <returns>The time that passed since periapsis passage in [seconds]</returns>
 		public static double trueAnomaly_to_time( double trueAnomaly, double ecc, double period ) {
 			return meanAnomaly_to_time( meanAnomaly( trueAnomaly, ecc ), period );
 		}
@@ -296,66 +297,70 @@ namespace Rendezvous {
 			return Orbit.flight_angle( this.eccentricity, trueAnomaly );
 		}
 
-		/// <summary>Calculates the velocity tangential to the Flight Path</summary>
+
+		/// <summary>Calculate the velocity tangential to the Flight Path</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
-		/// <returns>Tangential velocity in [m/s]</returns>
+		/// <returns>Tangential velocity in [meters/second]</returns>
 		public double tangential_velocity( double trueAnomaly ) {
 			return angularMomentum / altitude( trueAnomaly );
 		}
-		/// <summary>Calculates the velocity radial outwards to the Flight Path</summary>
+
+		/// <summary>Calculate the velocity radial outwards to the Flight Path</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
-		/// <returns>Radial outwards velocity in [m/s]</returns>
+		/// <returns>Radial outwards velocity in [meters/second]</returns>
 		public double radial_velocity( double trueAnomaly ) {
 			return body.mu / angularMomentum * eccentricity * Sin(trueAnomaly);
 		}
-		/// <summary>Calculates the velocity Tuple (tangetial, radial outwards) to the Flight Path</summary>
+
+		/// <summary>Calculate the velocity Tuple (tangetial, radial outwards) to the Flight Path</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
-		/// <returns>(tangetial velocity, radial outwards velocity) in [m/s]</returns>
+		/// <returns>(tangetial velocity, radial outwards velocity) in [meters/second]</returns>
 		public (double, double) velocities_tangential_radial( double trueAnomaly ) {
 			return (tangential_velocity( trueAnomaly ), radial_velocity( trueAnomaly ));
 		}
 
 
-		/// <summary>calculates the Eccentricity Anomaly for a given True Anomaly</summary>
+
+		/// <summary>Calculate the Eccentricity Anomaly for a given True Anomaly</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
-		/// <returns>the Eccentricity Anomaly in [radians]</returns>
+		/// <returns>The Eccentricity Anomaly in !!! [radians] !!</returns>
 		public double eccentricityAnomaly( double trueAnomaly ) {
 			return eccentricityAnomaly( trueAnomaly, eccentricity );
 		}
 
-		/// <summary>calculates the Mean Anomaly for a given Eccentricity Anomaly</summary>
-		/// <param name="E">the Eccentricity Anomaly in [radians]</param>
-		/// <returns>the Mean Anomaly in [degrees]</returns>
+		/// <summary>Calculate the Mean Anomaly for a given Eccentricity Anomaly</summary>
+		/// <param name="E">The Eccentricity Anomaly in [radians]</param>
+		/// <returns>The Mean Anomaly in [degrees]</returns>
 		public double meanAnomaly_from_eccentricityAnomaly( double E ) {
 			return meanAnomaly_from_eccentricityAnomaly( E, eccentricity );
 		}
 
-		/// <summary>calculates the Mean Anomaly for a given True Anomaly</summary>
+		/// <summary>Calculate the Mean Anomaly for a given True Anomaly</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
-		/// <returns>the Mean Anomaly in [degrees]</returns>
+		/// <returns>The Mean Anomaly in [degrees]</returns>
 		public double meanAnomaly( double trueAnomaly ) {
 			return meanAnomaly( trueAnomaly, eccentricity );
 		}
 
 
-		/// <summary>calculates the time since periapsis for a given Mean Anomaly</summary>
-		/// <param name="meanAnomaly">the Mean Anomaly in [degrees]</param>
-		/// <returns>the time that past since periapsis passage in  [seconds]</returns>
+		/// <summary>Calculate the time since periapsis for a given Mean Anomaly</summary>
+		/// <param name="meanAnomaly">The Mean Anomaly in [degrees]</param>
+		/// <returns>The time that passed since periapsis passage in [seconds]</returns>
 		public double meanAnomaly_to_time( double meanAnomaly ) {
 			return meanAnomaly_to_time( meanAnomaly, period );
 		}
 
-		/// <summary>calculates the time since periapsis for a given True Anomaly</summary>
+		/// <summary>Calculate the time since periapsis for a given True Anomaly</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
-		/// <returns>the time that past since periapsis passage in  [seconds]</returns>
+		/// <returns>The time that passed since periapsis passage in [seconds]</returns>
 		public double trueAnomaly_to_time( double trueAnomaly ) {
 			return trueAnomaly_to_time( trueAnomaly, eccentricity, period );
 		}
 
-		/// <summary>calculates the Mean Anomaly at a given time</summary>
-		/// <param name="time">time in [seconds]</param>
-		/// <param name="TM">the Time mode controls how the time value should be interpreted</param>
-		/// <returns>the Mean Anomaly in [degrees]</returns>
+		/// <summary>Calculate the Mean Anomaly at a given time</summary>
+		/// <param name="time">Time in [seconds]</param>
+		/// <param name="TM">The Time mode controls how the time value should be interpreted</param>
+		/// <returns>The Mean Anomaly in [degrees]</returns>
 		public double meanAnomaly_at_time( double time, TimeMode TM=TimeMode.UT ) {
 			double Me = 0d;
 			if (TM == TimeMode.UT )
@@ -366,10 +371,10 @@ namespace Rendezvous {
 			return ( Me % Constants.tau ) * Constants.deg;
 		}
 
-		/// <summary>calculates the True Anomaly at a given time; the solution is non trivial, thus this value get calculated via an iterative Alorithm</summary>
-		/// <param name="time">time in [seconds]</param>
-		/// <param name="TM">the Time mode controls how the time value should be interpreted</param>
-		/// <returns>the True Anomaly in [degrees]</returns>
+		/// <summary>Calculate the True Anomaly at a given time; the solution is non trivial, thus this value gets calculated via an iterative Algorithm</summary>
+		/// <param name="time">Time in [seconds]</param>
+		/// <param name="TM">The Time mode controls how the time value should be interpreted</param>
+		/// <returns>The True Anomaly in [degrees]</returns>
 		public double trueAnomaly_at_time( double time, TimeMode TM=TimeMode.UT ) {
 			double Me = meanAnomaly_at_time( time, TM ) * Constants.rad;
 
@@ -382,22 +387,32 @@ namespace Rendezvous {
 			return (double) methodinfo.Invoke( null, new object[] { Me, eccentricity } ) * Constants.deg;
 		}
 
-		
 
+		/// <summary>Calculate the Direction at a given True Anomaly</summary>
+		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
+		public Direction direction_at_trueAnomaly( double trueAnomaly ) {
+			return dir_at_periapsis.angleAxis( angularMomentum_Vector, trueAnomaly );
+		}
+
+
+		/// <summary>Calculate the normalized Position Vector (e.g. the direction) at a given True Anomaly</summary>
+		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
+		/// <returns>The Position 3d-normalized-Vector </returns>
 		public Vector normalized_position( double trueAnomaly ) {
 			// r_hat or u_hat, position direction
 			return Vector.angleAxis( eccentricity_Vector, angularMomentum_Vector, trueAnomaly ).normalized();
 		}
 
-		public Direction direction_at_trueAnomaly( double trueAnomaly ) {
-			return dir_at_periapsis.angleAxis( angularMomentum_Vector, trueAnomaly );
-		}
-
-		
+		/// <summary>Calculate the Position Vector at a given True Anomaly</summary>
+		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
+		/// <returns>The Position 3d-Vector in [meters]</returns>
 		public Vector position_at_trueAnomaly( double trueAnomaly ) {
 			return altitude( trueAnomaly ) * normalized_position( trueAnomaly );
 		}
 
+		/// <summary>Calculate the Velocity Vector at a given True Anomaly</summary>
+		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
+		/// <returns>The Velocity 3d-Vector [meters/second]</returns>
 		public Vector velocity_at_trueAnomaly( double trueAnomaly ) {
 			Direction dir = direction_at_trueAnomaly( trueAnomaly );
 			Vector radial_out_vel = radial_velocity( trueAnomaly ) * dir.top;
@@ -405,12 +420,20 @@ namespace Rendezvous {
 			return radial_out_vel + tangential_vel;
 		}
 
-		public Vector position_at_time( double time ) {
-			return position_at_trueAnomaly( trueAnomaly_at_time( time ) );
+		/// <summary>Calculate the Position Vector at a given Time</summary>
+		/// <param name="time">Time in [seconds]</param>
+		/// <param name="TM">The Time mode controls how the time value should be interpreted</param>
+		/// <returns>The Position 3d-Vector in [meters]</returns>
+		public Vector position_at_time( double time, TimeMode TM=TimeMode.UT ) {
+			return position_at_trueAnomaly( trueAnomaly_at_time( time, TM ) );
 		}
 
-		public Vector velocity_at_time( double time ) {
-			return velocity_at_trueAnomaly( trueAnomaly_at_time( time ) );
+		/// <summary>Calculate the Velocity Vector at a given Time</summary>
+		/// <param name="time">Time in [seconds]</param>
+		/// <param name="TM">The Time mode controls how the time value should be interpreted</param>
+		/// <returns>The Velocity 3d-Vector [meters/second]</returns>
+		public Vector velocity_at_time( double time, TimeMode TM = TimeMode.UT ) {
+			return velocity_at_trueAnomaly( trueAnomaly_at_time( time, TM ) );
 		}
 
 
@@ -568,7 +591,7 @@ node_Vec:	{nodeLine_Vector}";
 		}
 
 
-		private static Dictionary<EccAnomalyMode, Delegate> modeDictionary = new Dictionary<EccAnomalyMode, Delegate> {
+		private static readonly Dictionary<EccAnomalyMode, Delegate> modeDictionary = new Dictionary<EccAnomalyMode, Delegate> {
 			{ EccAnomalyMode.direct_bassel,	new Func<double, double, double>( bassel_eccAnomaly ) },
 			{ EccAnomalyMode.direct_LIT_n5,	new Func<double, double, double>( LIT_eccAnomaly_n5 ) },
 			{ EccAnomalyMode.newton_bassel,	new Func<double, double, double>( eccAnomaly_Bassel_Newton ) },
@@ -624,7 +647,7 @@ node_Vec:	{nodeLine_Vector}";
 		public static double LIT_eccAnomaly_n5( double meanAnomaly, double ecc ) {
 			// meanAnomaly in radians
 			// Lagrange inversion theorem to solve the Eccentricity Anomaly
-			// depth is only n=5, => wich results at a max Error of +- 9%, for an eccentricity of 0.8
+			// depth is only n=5, => wich results at a max Error of +-9%, for an eccentricity of 0.8
 
 			double m = .5f * ( meanAnomaly + Constants.pi );
 			double inputDiffrence = meanAnomaly - Orbit.meanAnomaly_from_eccentricityAnomaly( m, ecc );
