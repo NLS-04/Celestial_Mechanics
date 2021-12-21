@@ -236,7 +236,7 @@ namespace Rendezvous {
 			return Atan( ecc * Sin( trueAnomaly ) / ( 1 + ecc * Cos( trueAnomaly ) ) ) * Constants.deg;
 		}
 
-
+		#region Orbit position determination
 		/// <summary>Calculate the Eccentricity Anomaly for a given True Anomaly</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
 		/// <param name="ecc">Eccentricity of Orbit, ecc >= 0</param>
@@ -279,7 +279,8 @@ namespace Rendezvous {
 		public static double trueAnomaly_to_time( double trueAnomaly, double ecc, double period ) {
 			return meanAnomaly_to_time( meanAnomaly( trueAnomaly, ecc ), period );
 		}
-
+		#endregion
+		
 		#endregion
 
 		#region methods
@@ -320,7 +321,7 @@ namespace Rendezvous {
 		}
 
 
-
+		#region Orbit position determination
 		/// <summary>Calculate the Eccentricity Anomaly for a given True Anomaly</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
 		/// <returns>The Eccentricity Anomaly in !!! [radians] !!</returns>
@@ -386,6 +387,7 @@ namespace Rendezvous {
 
 			return (double) methodinfo.Invoke( null, new object[] { Me, eccentricity } ) * Constants.deg;
 		}
+		#endregion
 
 
 		/// <summary>Calculate the Direction at a given True Anomaly</summary>
@@ -394,7 +396,7 @@ namespace Rendezvous {
 			return dir_at_periapsis.angleAxis( angularMomentum_Vector, trueAnomaly );
 		}
 
-
+		#region State Vector methods
 		/// <summary>Calculate the normalized Position Vector (e.g. the direction) at a given True Anomaly</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
 		/// <returns>The Position 3d-normalized-Vector </returns>
@@ -435,7 +437,7 @@ namespace Rendezvous {
 		public Vector velocity_at_time( double time, TimeMode TM = TimeMode.UT ) {
 			return velocity_at_trueAnomaly( trueAnomaly_at_time( time, TM ) );
 		}
-
+		#endregion
 
 		public string staticInformation() {
 			return $@"apoapsis:	{apoapsis}
