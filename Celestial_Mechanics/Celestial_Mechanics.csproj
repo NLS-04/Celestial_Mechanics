@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Configurations>Debug;Release</Configurations>
@@ -14,8 +15,6 @@
     <LangVersion>latestMajor</LangVersion>
     <StartupObject>Celestial_Mechanics.Rendezvous</StartupObject>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
-    <AssemblyName>Celestial_Mechanics</AssemblyName>
-    <RootNamespace>Celestial_Mechanics</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
