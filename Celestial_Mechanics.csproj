@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Configurations>Debug;Release;Debug_Iteration</Configurations>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,8 +12,10 @@
 
   <PropertyGroup>
     <LangVersion>latestMajor</LangVersion>
-    <StartupObject>Rendezvous.Rendezvous</StartupObject>
+    <StartupObject>Celestial_Mechanics.Rendezvous</StartupObject>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
+    <AssemblyName>Celestial_Mechanics</AssemblyName>
+    <RootNamespace>Celestial_Mechanics</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

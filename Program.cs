@@ -3,7 +3,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using Vectors;
 
-namespace Rendezvous {
+namespace Celestial_Mechanics {
 	public class Rendezvous {
 		public static void Main( string[] args ) {
 			Orbit a = new Orbit( 1000 * new Vector( -6045, -3490, 2500 ), new Vector( -3457, 6618, 2533 ), 0f, Body.EARTH );

@@ -3,7 +3,7 @@ using static System.Math;
 using Vectors;
 using System.Collections.Generic;
 
-namespace Rendezvous {
+namespace Celestial_Mechanics {
 	public class Constants {
 		public const double G   = 6.67430E-11d;
 		public const double e   = Math.E;
