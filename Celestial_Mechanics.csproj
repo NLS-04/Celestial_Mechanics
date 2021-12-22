@@ -1,11 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Vector_Library\VectorTests\Program.cs" />
+    <Compile Remove="Vector_Library\VectorTests\Vectors.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Vector_Library\VectorTests\Vectors.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Vector_Library\VectorTests\Program.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
@@ -15,6 +28,7 @@
     <LangVersion>latestMajor</LangVersion>
     <StartupObject>Celestial_Mechanics.Rendezvous</StartupObject>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
+    <Authors />
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

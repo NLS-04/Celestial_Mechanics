@@ -468,6 +468,7 @@ node_Vec:	{nodeLine_Vector}";
 		}
 	}
 
+
 	public struct Direction {
 		public readonly static Direction defaultDirection = new Direction( Vector.forward, Vector.side, Vector.up );
 
