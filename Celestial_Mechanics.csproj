@@ -8,16 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Vector_Library\VectorTests\Program.cs" />
-    <Compile Remove="Vector_Library\VectorTests\Vectors.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Vector_Library\VectorTests\Vectors.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Vector_Library\VectorTests\Program.cs" />
+    <EmbeddedResource Include="Vector_Library\VectorTests\Vectors.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
