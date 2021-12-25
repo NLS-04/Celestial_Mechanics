@@ -4,7 +4,7 @@ using BenchmarkDotNet.Running;
 using Vectors;
 
 namespace Celestial_Mechanics {
-	public class Rendezvous {
+	public class Test_CM {
 		public static void Main( string[] args ) {
 			Orbit a = new Orbit( 1000 * new Vector( -6045, -3490, 2500 ), new Vector( -3457, 6618, 2533 ), 0f, Body.EARTH );
 			Orbit b = new Orbit( a.inclination, a.eccentricity, a.semiMajorAxis, a.longitudeOfAscendingNode, a.argumentOfPeriapsis, a.meanAnomaly_At_Epoch, a.epoch, a.body );
@@ -12,7 +12,7 @@ namespace Celestial_Mechanics {
 			Console.WriteLine();
 			Console.WriteLine( b.staticInformation() );
 
-			Console.WriteLine(a.Equals(b));
+			Console.WriteLine( a.Equals( b ) );
 
 			//Console.WriteLine( Orbit.meanAnomaly( 120, .37255f ) );
 			//Console.WriteLine( Orbit.trueAnomaly_to_time( 120, .37255f, 18_834 ) );
@@ -40,7 +40,7 @@ namespace Celestial_Mechanics {
 
 			//	Console.WriteLine( String.Format( formatStr, ecc, newton, secant, binary ) );
 			//}
-			
+
 			//for ( double t = 0 ; t <= a.period ; t += a.period / 100f ) {
 			//	Console.WriteLine( String.Format( "{0, -10} | {1, -10}", t, a.trueAnomaly_at_time(t)*Constants.deg ) );
 			//}
@@ -66,7 +66,7 @@ namespace Celestial_Mechanics {
 
 
 		//[Benchmark]
-		public void bassel_Jn( ) {
+		public void bassel_Jn() {
 			Solver.bassel_Jn( bas.x, bas.n );
 		}
 

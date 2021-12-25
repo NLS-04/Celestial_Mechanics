@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30128.74
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Celestial_Mechanics", "Celestial_Mechanics.csproj", "{F3928211-9893-4F3C-8322-44B9A9AC0630}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vectors", "..\Vectors\Vectors.csproj", "{D4AAAEE2-E3D0-424D-8A21-90DF4F8B883E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test_CM", "utest\Test_CM\Test_CM.csproj", "{17ECF7B4-C085-4A35-B3BD-01E278A5A300}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Celestial_Mechanics", "src\Celestial_Mechanics\Celestial_Mechanics.csproj", "{D077777A-D8AE-472E-9556-4AFF1D7E49A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F3928211-9893-4F3C-8322-44B9A9AC0630}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F3928211-9893-4F3C-8322-44B9A9AC0630}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F3928211-9893-4F3C-8322-44B9A9AC0630}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F3928211-9893-4F3C-8322-44B9A9AC0630}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4AAAEE2-E3D0-424D-8A21-90DF4F8B883E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4AAAEE2-E3D0-424D-8A21-90DF4F8B883E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4AAAEE2-E3D0-424D-8A21-90DF4F8B883E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4AAAEE2-E3D0-424D-8A21-90DF4F8B883E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17ECF7B4-C085-4A35-B3BD-01E278A5A300}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17ECF7B4-C085-4A35-B3BD-01E278A5A300}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17ECF7B4-C085-4A35-B3BD-01E278A5A300}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17ECF7B4-C085-4A35-B3BD-01E278A5A300}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D077777A-D8AE-472E-9556-4AFF1D7E49A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D077777A-D8AE-472E-9556-4AFF1D7E49A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D077777A-D8AE-472E-9556-4AFF1D7E49A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D077777A-D8AE-472E-9556-4AFF1D7E49A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
