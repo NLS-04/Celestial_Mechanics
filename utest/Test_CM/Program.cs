@@ -6,18 +6,21 @@ using Vectors;
 namespace Celestial_Mechanics {
 	public class Test_CM {
 		public static void Main( string[] args ) {
-			Orbit a = new Orbit( 1000 * new Vector( -6045, -3490, 2500 ), new Vector( -3457, 6618, 2533 ), 0f, Body.EARTH );
-			Orbit b = new Orbit( a.inclination, a.eccentricity, a.semiMajorAxis, a.longitudeOfAscendingNode, a.argumentOfPeriapsis, a.meanAnomaly_At_Epoch, a.epoch, a.body );
-			Console.WriteLine( a.staticInformation() );
-			Console.WriteLine();
-			Console.WriteLine( b.staticInformation() );
+			//Orbit a = new Orbit( 1000 * new Vector( -6045, -3490, 2500 ), new Vector( -3457, 6618, 2533 ), 0f, Body.EARTH );
+			//Orbit b = new Orbit( a.inclination, a.eccentricity, a.semiMajorAxis, a.longitudeOfAscendingNode, a.argumentOfPeriapsis, a.meanAnomaly_At_Epoch, a.epoch, a.body );
+			//Console.WriteLine( a.staticInformation() );
+			//Console.WriteLine();
+			//Console.WriteLine( b.staticInformation() );
 
-			Console.WriteLine( a.Equals( b ) );
+			//Console.WriteLine( a.Equals( b ) );
+
+			//Solver.Result re = Solver.section( ( x ) => ( x - 1 ) * ( x - 2 ) * ( x - 5 ), 1d, 4d, 30, false );
+			//Console.WriteLine(re);
 
 			//Console.WriteLine( Orbit.meanAnomaly( 120, .37255f ) );
 			//Console.WriteLine( Orbit.trueAnomaly_to_time( 120, .37255f, 18_834 ) );
 
-			//_ = BenchmarkRunner.Run<Tests>();
+			_ = BenchmarkRunner.Run<Tests_other>();
 
 
 			//float maxIntervals = 100f;
@@ -45,6 +48,35 @@ namespace Celestial_Mechanics {
 			//	Console.WriteLine( String.Format( "{0, -10} | {1, -10}", t, a.trueAnomaly_at_time(t)*Constants.deg ) );
 			//}
 		}
+	}
+
+	[SimpleJob( BenchmarkDotNet.Engines.RunStrategy.Throughput, launchCount: 3, warmupCount: 5, targetCount: 5 )]
+	[MemoryDiagnoser]
+	public class Tests_other {
+
+		[Params(true, false)]
+		public bool searchForMin;
+
+		[Benchmark]
+		public void section_search_normal() {
+			Solver.section( ( x ) => x / ( x*x + 1 ), -2d, 4d, 36, searchForMin );
+		}
+
+		[Benchmark]
+		public void section_search_2() {
+			Solver.section( ( x ) => x / ( x * x + 1 ), -2d, 4d, 2, searchForMin );
+		}
+
+		[Benchmark]
+		public void section_search_3() {
+			Solver.section( ( x ) => x / ( x * x + 1 ), -2d, 4d, 3, searchForMin );
+		}
+
+		[Benchmark]
+		public void section_search_4() {
+			Solver.section( ( x ) => x / ( x * x + 1 ), -2d, 4d, 4, searchForMin );
+		}
+
 	}
 
 	[MemoryDiagnoser]

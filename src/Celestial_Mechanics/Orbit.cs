@@ -10,13 +10,18 @@ namespace Celestial_Mechanics {
 		public const double pi  = Math.PI;
 		public const double tau = 2 * pi;
 
-		/// <summary>convert a degrees value into a radians value by multiplying with this constant <see cref="rad"/></summary>
+		/// <summary>Convert a degrees value into a radians value by multiplying with this constant <see cref="rad"/></summary>
 		public const double rad = pi / 180;
 
-		/// <summary>convert a radians value into a degrees value by multiplying with this constant <see cref="deg"/></summary>
+		/// <summary>Convert a radians value into a degrees value by multiplying with this constant <see cref="deg"/></summary>
 		public const double deg = 180 / pi;
 	}
 
+	/// <summary>
+	/// Frame Of Refrences:
+	///		=>	ECI		('Earth'-Centered-Inertial): is a inertial Refrence Frame, on which all orbit parameters are defined
+	///		=>	ECEF	('Earth'-Centered-'Eaerth'-Fixed): is a non-inertial Refrence Frame, which is usefull to describe positions relative to a Body's surface
+	/// </summary>
 	public class Body {
 		// mu = G*M
 		/// <summary>Standard gravitational parameter 'mu' of an <see cref="Body"/> in [m^3/s^2]</summary>
@@ -26,56 +31,144 @@ namespace Celestial_Mechanics {
 		/// <summary>Average radial distance of the surface of an <see cref="Body"/> in [m]</summary>
 		public readonly double radius;
 
-		public readonly Direction orientation = Direction.defaultDirection;
+
+		public Orbit? orbit;
+
+
+		public readonly double rotationPeriod;
+		public readonly double rotationSpeed;
+		public readonly Vector rotationVector;
+
+		/// <summary>This <see cref="Direction"/> is defined to be this Body's ECI Frame of refrence at <see cref="Orbit.TimeMode.UT"/> <see langword="0.0d"/>, thus all derived orbit parameters are based on this (inertial) ECI Frame </summary>
+		public readonly Direction ECI_Orientation = Direction.defaultDirection;
+
+
+		/* Example of how to Convert Vectors between diffrent Bodies (Coordinate Systems):
+		 *		!! LOOKUP THE PNG (./src/coordinateConvertion.png) FOR VISUALISATION AND BETTER UNDERSTANDING !!
+		 * 
+		 *	-----------------------------------------------------------------------------------------------------------------------------------------------------------
+		 *	
+		 *	1. Convert a Satelite position from Earths ECI to Moons ECI refrence frame. (assuming Moon is a (orbiting) sub Body of Earth)
+		 *		Concept:
+		 *			( [Earth ECI, Moon as Origin] pos_Satelite ) = ( [Earth ECI, Earth as Origin] pos_Satelite ) - ( [Earth ECI, Earth as Origin] pos_Moon )
+		 *			( [Moon ECI, Moon as Origin] pos_Satelite ) = Moon.WorldToLocal( ([Earth ECI, Moon as Origin] pos_Satelite) )
+		 *		
+		 *		Pseudo-ish Code:
+		 *			Vector pos_Satelite = Earth.getPositionOf( Satelite, TimeNow ) - Earth.getPositionOf( Moon, TimeNow );
+		 *			return Moon.WorldToLocal( pos_Satelite );
+		 *		
+		 *	-----------------------------------------------------------------------------------------------------------------------------------------------------------
+		 *	
+		 *	2. Convert a Satelite position from Moons ECI to Earths ECI refrence frame. (assuming Moon is a (orbiting) sub Body of Earth)
+		 *		Concept:
+		 *			( [Earth ECI] pos_Satelite ) = Earth.worldToLocal( ([Moon ECI] pos_Satelite) )
+		 *			( [Earth ECI] pos_Satelite ) = ( [Earth ECI] pos_Satelite ) + ( [Earth ECI] pos_Moon )
+		 *		
+		 *		Pseudo-ish Code:
+		 *			Vector pos_Satelite = Earth.worldToLocal( pos_Satelite );
+		 *			return pos_Satelite + Earth.getPositionOf( Moon, TimeNow_UT );
+		 *			
+		 *	-----------------------------------------------------------------------------------------------------------------------------------------------------------
+		 */
 
 
 		/// <summary>Constructor for an (large) orbitable Body</summary>
 		/// <param name="mu">Standard gravitational parameter 'mu' of <see langword="this"/> <see cref="Body"/> in [m^3/s^2]</param>
 		/// <param name="radius">Average radial distance of the surface of <see langword="this"/> <see cref="Body"/> in [m]</param>
-		/// <param name="orient">A struct to orientate a coordinate system of <see langword="this"/> <see cref="Body"/>; if its <see langword="null"/> the <see cref="Body.orientation"/> is set to the <see cref="defaultDirection"/></param>
-		public Body( float mu, double radius /*, Direction? orient=null*/ ) {
+		/// <param name="orient">A struct to orientate a coordinate system of <see langword="this"/> <see cref="Body"/>; It is defined as being the <see cref="Direction"/> of <see langword="this"/> <see cref="Body"/> at Uinversal Time (<see cref="Orbit.TimeMode.UT"/>) <see langword="0.0d"/>; If its <see langword="null"/> the <see cref="Body.orientation"/> is set to the <see cref="defaultDirection"/> </param>
+		/// <param name="angularVelocity">A <see cref="Vector"/> pointing in the Direction of the Axis of rotation; The magnitude of the <see cref="Vector"/> is the speed of the rotation in [radians / second]; If its <see langword="null"/> <see cref="Vector.zero"/> is being assigned</param>
+		public Body( float mu, double radius, Vector? angularVelocity=null, Direction? orient=null ) {
 			this.mu     = mu;
 			this.mass   = mu / Constants.G;
 			this.radius = radius;
-			//this.orientation = orient ?? Direction.defaultDirection;
+			
+			this.rotationVector = angularVelocity ?? Vector.zero;
+			this.ECI_Orientation = orient ?? Direction.defaultDirection;
+
+			this.rotationSpeed = this.rotationVector.mag();
+			this.rotationPeriod = Constants.tau / this.rotationSpeed;
 		}
 
 		/// <summary>Constructor for an (large) orbitable Body</summary>
 		/// <param name="radius">Average radial distance of the surface of <see langword="this"/> <see cref="Body"/> in [m]</param>
 		/// <param name="mass">Mass of <see langword="this"/> <see cref="Body"/> in [kg]</param>
-		/// <param name="orient">A struct to orientate a coordinate system of <see langword="this"/> <see cref="Body"/>; if its <see langword="null"/> the <see cref="Body.orientation"/> is set to the <see cref="defaultDirection"/></param>
-		public Body( double radius, float mass /*, Direction? orient=null*/ ) {
+		/// <param name="orient">A struct to orientate a coordinate system of <see langword="this"/> <see cref="Body"/>; It is defined as being the <see cref="Direction"/> of <see langword="this"/> <see cref="Body"/> at Uinversal Time (<see cref="Orbit.TimeMode.UT"/>) <see langword="0.0d"/>; If its <see langword="null"/> the <see cref="Body.orientation"/> is set to the <see cref="defaultDirection"/> </param>
+		/// <param name="angularVelocity">A <see cref="Vector"/> pointing in the Direction of the Axis of rotation; The magnitude of the <see cref="Vector"/> is the speed of the rotation in [radians / second]; If its <see langword="null"/> <see cref="Vector.zero"/> is being assigned</param>
+		public Body( double radius, float mass, Vector? angularVelocity=null, Direction? orient=null ) {
 			this.mass   = mass;
 			this.mu     = mass * Constants.G;
 			this.radius = radius;
-			//this.orientation = orient ?? Direction.defaultDirection;
+			
+			this.rotationVector = angularVelocity ?? Vector.up;
+			this.ECI_Orientation = orient ?? Direction.defaultDirection;
+
+			this.rotationSpeed = this.rotationVector.mag();
+			this.rotationPeriod = Constants.tau / this.rotationSpeed;
 		}
 
-		public readonly static Body KERBIN = new Body( 3.5316E12f,      600_000d   );
-		public readonly static Body EARTH  = new Body( 3.986004418E14f, 6_371_000d );
-		public readonly static Body MARS   = new Body( 4.282837E13f,	3_389_500d );
+
+		public readonly static Body KERBIN = new Body( 3.5316E12f,      600_000d  , Vector.up * Constants.tau / 21_549.425d );
+		public readonly static Body EARTH  = new Body( 3.986004418E14f, 6_371_000d, Vector.up * Constants.tau / 86_164.0d   );
+		public readonly static Body MARS   = new Body( 4.282837E13f,	3_389_500d, Vector.up * Constants.tau / 88_642.0d   );
+
 
 		public override bool Equals( object obj ) {
 			if ( !(obj is Body) )
 				return false;
 			Body bod = (Body) obj;
-			return mu == bod.mu && radius == bod.radius && ( orientation.Equals(bod.orientation) );
+			return mu == bod.mu && radius == bod.radius && ( ECI_Orientation.Equals(bod.ECI_Orientation) );
 		}
+		public override int GetHashCode() => -100;
 
 		public static bool operator ==( Body a, Body b ) => a.Equals( b );
 		public static bool operator !=( Body a, Body b ) =>!a.Equals( b );
+
+
+		public Direction getDirectionAtTime( double UT ) {
+			// the modulo is not actually necessary, but clarifies that the angle should be between 0 and 2*pi
+			return ECI_Orientation.angleAxis( rotationVector, ( rotationSpeed * UT ) % Constants.tau );
+		}
+
+		public Vector getParentPosition( double UT ) {
+			if ( orbit is null )
+				return Vector.zero;
+			return orbit.position_at_time( UT, Orbit.TimeMode.UT );
+		}
+
+		public Vector getWorldPosition( double UT ) {
+			return convert_LocalToWorld( UT, Vector.zero );
+		}
+
+		public Vector convert_LocalToWorld( double UT, Vector p ) {
+			if ( orbit is null ) // we are the center of the univers :-) so the vector is allready in the correct Frame
+				return p;
+
+			// convert this Vector definded in this Body's coordinate system to the system of this Body's parent Body
+			Vector convertedPos = orbit.body.ECI_Orientation.worldToLocal( p );
+			
+			// add the position of this Body in the frame of this Body's parent Body
+			convertedPos += orbit.position_at_time( UT, Orbit.TimeMode.UT );
+
+			return orbit.body.convert_LocalToWorld( UT, convertedPos );
+		}
+
+		public Vector convert_WorldToLocal( double UT, Vector p ) {
+			Vector offsetedVector = p - getWorldPosition( UT );
+
+			return ECI_Orientation.worldToLocal( offsetedVector );
+		}
 	}
 
 	/// <summary>
 	/// 
 	/// </summary>
 	public class Orbit {
-		/* LAN (longitude of Ascending Node) measured to X-Axis of the Body
-		 * inclination measured to XY-Plane of the Body
+		/* LAN (longitude of Ascending Node) measured to X-Axis of the Body's initial ECI-Frame
+		 * inclination measured to XY-Plane of the Body's initial ECI-Frame
 		 * Body's North == Z-Axis
 		 */
 
-		/* All (readable) angle Values are in [DEGREES] but are internaly converted and calculated as [RADIANS] */
+		/* All (readable) angle Values are in [DEGREES] but are internally converted and calculated as [RADIANS] */
 
 		public Body body;
 
@@ -120,8 +213,8 @@ namespace Celestial_Mechanics {
 			semi_latus_rectum = angularMomentum * angularMomentum / body.mu;
 
 
-			nodeLine_Vector        = Vector.angleAxis( body.orientation.forward, body.orientation.top, longitudeOfAscendingNode * Constants.rad ).normalized();
-			angularMomentum_Vector = Vector.angleAxis( body.orientation.top, nodeLine_Vector, inclination * Constants.rad ).normalized();
+			nodeLine_Vector        = Vector.angleAxis( body.ECI_Orientation.forward, body.ECI_Orientation.top, longitudeOfAscendingNode * Constants.rad ).normalized();
+			angularMomentum_Vector = Vector.angleAxis( body.ECI_Orientation.top, nodeLine_Vector, inclination * Constants.rad ).normalized();
 			eccentricity_Vector    = Vector.angleAxis( nodeLine_Vector, angularMomentum_Vector, argOfPer * Constants.rad ).normalized();
 
 			meanAnomaly_At_Epoch = mEp;
@@ -141,9 +234,9 @@ namespace Celestial_Mechanics {
 			angularMomentum_Vector = Vector.cross( pos, vel );
 			angularMomentum = angularMomentum_Vector.mag();
 
-			inclination = Vector.vang(angularMomentum_Vector, body.orientation.top) * Constants.deg;
+			inclination = Vector.vang(angularMomentum_Vector, body.ECI_Orientation.top) * Constants.deg;
 
-			nodeLine_Vector = Vector.cross( body.orientation.top, angularMomentum_Vector );
+			nodeLine_Vector = Vector.cross( body.ECI_Orientation.top, angularMomentum_Vector );
 
 			longitudeOfAscendingNode = Acos( nodeLine_Vector.x / nodeLine_Vector.mag() ) * Constants.deg;
 			longitudeOfAscendingNode = nodeLine_Vector.y < 0 ? 360 - longitudeOfAscendingNode : longitudeOfAscendingNode;
@@ -167,7 +260,7 @@ namespace Celestial_Mechanics {
 			angularMomentum_Vector = angularMomentum_Vector.normalized();
 			eccentricity_Vector = eccentricity_Vector.normalized();
 
-			meanAnomaly_At_Epoch = meanAnomaly( Vector.vang( body.orientation.forward, eccentricity_Vector ) * Constants.deg );
+			meanAnomaly_At_Epoch = meanAnomaly( Vector.vang( body.ECI_Orientation.forward, eccentricity_Vector ) * Constants.deg );
 
 			dir_at_periapsis = Direction.lookDirUp( eccentricity_Vector, angularMomentum_Vector );
 		}
@@ -189,6 +282,7 @@ namespace Celestial_Mechanics {
 				this.argumentOfPeriapsis == b.argumentOfPeriapsis &&
 				this.body == b.body;
 		}
+		public override int GetHashCode() => -500;
 		#endregion
 
 		#region static_methods
@@ -280,7 +374,30 @@ namespace Celestial_Mechanics {
 			return meanAnomaly_to_time( meanAnomaly( trueAnomaly, ecc ), period );
 		}
 		#endregion
+
+		#region two_Orbit_Methods
+		public struct PointsOfInterest {
+			public double? I, J;
+		}
+
+		public static double getDistance_at_Time( Orbit A, Orbit B, double UT ) {
+			Vector posA = A.position_world_at_time( UT );
+			Vector posB = B.position_world_at_time( UT );
+
+			return ( posA - posB ).mag();
+		}
+
+		public static PointsOfInterest getIntersectionPoints( Orbit A, Orbit B ) {
+			return new PointsOfInterest { I = 0, J = 0 };
+		}
 		
+		public static PointsOfInterest getTangentialPoints( Orbit A, Orbit B ) {
+			return new PointsOfInterest { I = 0, J = 0 };
+		}
+
+
+		#endregion
+
 		#endregion
 
 		#region methods
@@ -318,6 +435,10 @@ namespace Celestial_Mechanics {
 		/// <returns>(tangetial velocity, radial outwards velocity) in [meters/second]</returns>
 		public (double, double) velocities_tangential_radial( double trueAnomaly ) {
 			return (tangential_velocity( trueAnomaly ), radial_velocity( trueAnomaly ));
+		}
+
+		public GeoPosition GetGeoPosition( double UT ) {
+			return new GeoPosition( position_at_time( UT, TimeMode.UT ), body );
 		}
 
 
@@ -358,16 +479,19 @@ namespace Celestial_Mechanics {
 			return trueAnomaly_to_time( trueAnomaly, eccentricity, period );
 		}
 
+		
 		/// <summary>Calculate the Mean Anomaly at a given time</summary>
 		/// <param name="time">Time in [seconds]</param>
 		/// <param name="TM">The Time mode controls how the time value should be interpreted</param>
 		/// <returns>The Mean Anomaly in [degrees]</returns>
 		public double meanAnomaly_at_time( double time, TimeMode TM=TimeMode.UT ) {
 			double Me = 0d;
-			if (TM == TimeMode.UT )
-				Me = Constants.tau * ( time - epoch ) / period + meanAnomaly_At_Epoch;
-			else 
-				Me = Constants.tau * time / period;
+			Me = TM switch 
+			{
+				TimeMode.UT => Constants.tau * ( time - epoch ) / period + meanAnomaly_At_Epoch,
+				TimeMode.PeriapsRelativ => Constants.tau * time / period,
+				_ => throw new ArgumentException("Use Correct TimeMode, e.g. UT, PeriapsRelativ", "TM")
+			};
 
 			return ( Me % Constants.tau ) * Constants.deg;
 		}
@@ -399,22 +523,23 @@ namespace Celestial_Mechanics {
 		#region State Vector methods
 		/// <summary>Calculate the normalized Position Vector (e.g. the direction) at a given True Anomaly</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
-		/// <returns>The Position 3d-normalized-Vector </returns>
+		/// <returns>The Position 3d-normalized-Vector in (this body's) [ECI]-Frame</returns>
 		public Vector normalized_position( double trueAnomaly ) {
 			// r_hat or u_hat, position direction
 			return Vector.angleAxis( eccentricity_Vector, angularMomentum_Vector, trueAnomaly ).normalized();
 		}
 
+
 		/// <summary>Calculate the Position Vector at a given True Anomaly</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
-		/// <returns>The Position 3d-Vector in [meters]</returns>
+		/// <returns>The Position 3d-Vector in [meters] in (this body's) [ECI]-Frame</returns>
 		public Vector position_at_trueAnomaly( double trueAnomaly ) {
 			return altitude( trueAnomaly ) * normalized_position( trueAnomaly );
 		}
 
 		/// <summary>Calculate the Velocity Vector at a given True Anomaly</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
-		/// <returns>The Velocity 3d-Vector [meters/second]</returns>
+		/// <returns>The Velocity 3d-Vector [meters/second] in (this body's) [ECI]-Frame</returns>
 		public Vector velocity_at_trueAnomaly( double trueAnomaly ) {
 			Direction dir = direction_at_trueAnomaly( trueAnomaly );
 			Vector radial_out_vel = radial_velocity( trueAnomaly ) * dir.top;
@@ -422,10 +547,11 @@ namespace Celestial_Mechanics {
 			return radial_out_vel + tangential_vel;
 		}
 
+
 		/// <summary>Calculate the Position Vector at a given Time</summary>
 		/// <param name="time">Time in [seconds]</param>
 		/// <param name="TM">The Time mode controls how the time value should be interpreted</param>
-		/// <returns>The Position 3d-Vector in [meters]</returns>
+		/// <returns>The Position 3d-Vector in [meters] in (this body's) [ECI]-Frame</returns>
 		public Vector position_at_time( double time, TimeMode TM=TimeMode.UT ) {
 			return position_at_trueAnomaly( trueAnomaly_at_time( time, TM ) );
 		}
@@ -433,11 +559,21 @@ namespace Celestial_Mechanics {
 		/// <summary>Calculate the Velocity Vector at a given Time</summary>
 		/// <param name="time">Time in [seconds]</param>
 		/// <param name="TM">The Time mode controls how the time value should be interpreted</param>
-		/// <returns>The Velocity 3d-Vector [meters/second]</returns>
-		public Vector velocity_at_time( double time, TimeMode TM = TimeMode.UT ) {
+		/// <returns>The Velocity 3d-Vector [meters/second] in (this body's) [ECI]-Frame</returns>
+		public Vector velocity_at_time( double time, TimeMode TM=TimeMode.UT ) {
 			return velocity_at_trueAnomaly( trueAnomaly_at_time( time, TM ) );
 		}
+
+
+		public Vector position_world_at_time( double UT ) {
+			return body.convert_LocalToWorld( UT, position_at_time( UT, TimeMode.UT ) );
+		}
+
+		public Vector velocity_world_at_time( double UT ) {
+			return body.convert_LocalToWorld( UT, velocity_at_time( UT, TimeMode.UT ) );
+		}
 		#endregion
+
 
 		public string staticInformation() {
 			return $@"apoapsis:	{apoapsis}
@@ -468,30 +604,83 @@ node_Vec:	{nodeLine_Vector}";
 		}
 	}
 
+	public struct GeoPosition {
+		// (latitude  "=") declination     = 'Vertical location measure'
+		// (longitude "=") right ascension = 'Horizontal location measure'
+
+		public readonly Body body;
+		/// <summary>Time independent Geoposition angle measurement in [degrees], in body's [ECI]-Frame</summary>
+		public readonly double declination, rightAscension;
+
+		public readonly Vector ECI_vector;
+
+		public GeoPosition( double dec, double rightAsc, Body bod ) {
+			body = bod;
+			declination = dec * Constants.deg;
+			rightAscension = rightAsc * Constants.deg;
+
+			Vector decVec = Vector.angleAxis( body.ECI_Orientation.forward, body.rotationVector, dec );
+			ECI_vector = Vector.angleAxis( decVec, body.ECI_Orientation.top, rightAsc );
+		}
+
+		/// <param name="pos">The position Vector MUST be in bods's [ECI]-Frame</param>
+		public GeoPosition( Vector pos, Body bod ) {
+			body = bod;
+
+			ECI_vector = pos.normalized();
+			(declination, rightAscension) = GeoPosition.declination_RightAscension( ECI_vector );
+		}
+
+		/// <summary>Latitude, Longitude angles at a given Time, e.g. Converts the declination and right Ascension ECI angles into ECEF angles</summary>
+		/// <param name="UT"><see cref="Orbit.TimeMode.UT"/></param>
+		/// <returns>(Latitude, Longitude) in [degrees], in body's [ECEF]-Frame</returns>
+		public (double, double) getLatLngAtTime( double UT ) {
+			Vector ECEF = body.getDirectionAtTime( UT ).worldToLocal( ECI_vector );
+
+			return GeoPosition.declination_RightAscension( ECEF );
+		}
+
+		private static (double, double) declination_RightAscension( Vector pos ) {
+			double declination = Asin( pos.y ) * Constants.deg;
+			double rightAscension = Acos( pos.x / Cos( declination ) ) * Constants.deg;
+			return (declination, rightAscension);
+		}
+	}
+
 
 	public struct Direction {
 		public readonly static Direction defaultDirection = new Direction( Vector.forward, Vector.side, Vector.up );
 
-		public readonly Vector forward;
-		public readonly Vector top;
-		public readonly Vector side;
+		public readonly Vector forward;	// X
+		public readonly Vector side;	// Y
+		public readonly Vector top;		// Z
 
-		public Direction( Vector forward, Vector top, Vector side ) {
+		public Direction( Vector forward, Vector side, Vector top ) {
 			this.forward = forward.normalized();
-			this.top     = top.normalized();
 			this.side    = side.normalized();
+			this.top     = top.normalized();
 		}
 
 		public static Direction lookDirUp( Vector lookAt, Vector lookUp ) {
-			return new Direction( lookAt, lookUp, Vector.cross( lookAt, lookUp ) );
+			return new Direction( lookAt, Vector.cross( lookAt, lookUp ), lookUp );
 		}
 
 		public Direction angleAxis( Vector rotVec, double angle ) {
+			rotVec = rotVec.normalized();
 			return new Direction(
 				Vector.angleAxis( forward, rotVec, angle ),
-				Vector.angleAxis( top	 , rotVec, angle ),
-				Vector.angleAxis( side   , rotVec, angle ) 
+				Vector.angleAxis( side   , rotVec, angle ), 
+				Vector.angleAxis( top	 , rotVec, angle )
 			);
+		}
+
+
+		public Vector worldToLocal( Vector vec ) {
+			return new Vector( vec * forward, vec * side, vec * top );
+		}
+
+		public Vector localToWorld( Vector vec ) {
+			return vec.x * forward + vec.y * side + vec.z * top;
 		}
 
 		public override string ToString() {
@@ -538,7 +727,23 @@ node_Vec:	{nodeLine_Vector}";
 		public static uint   DISCRETE_STEPS      = 5u;
 		public static uint   MAX_ITERATION_STEPS = 1_000u;
 
-		public static (double, double) newton( Func<double, double> baseFunc, Func<double, double> derivativeFunc, double startValue, double err = 1E-5f, uint maxIter = 1_000u ) {
+		public struct Result {
+			public readonly double  absoluteError;
+			public readonly double  value;
+			public readonly double? input;
+
+			public Result( double err, double val ) {
+				(absoluteError, value, input) = (err, val, null);
+			}
+
+			public Result( double err, double val, double inpu ) {
+				(absoluteError, value, input) = (err, val, inpu);
+			}
+
+			public override string ToString() => $"val:\t{value}\nerror:\t{absoluteError}" + ( input is null ? "" : $"\ninput:\t{input}");
+		}
+
+		public static Result newton( Func<double, double> baseFunc, Func<double, double> derivativeFunc, double startValue, double err = 1E-5d, uint maxIter = 1_000u ) {
 			double currentError = Abs( 2 * err );
 			double X = startValue;
 
@@ -550,10 +755,10 @@ node_Vec:	{nodeLine_Vector}";
 				}
 			} catch ( DivideByZeroException ) { }
 
-			return (X, currentError);
+			return new Result(X, currentError);
 		}
 
-		public static (double, double) secant( Func<double, double> function, double bound0, double bound1, double err = 1E-5f, uint maxIter = 1_000u ) {
+		public static Result secant( Func<double, double> function, double bound0, double bound1, double err = 1E-5d, uint maxIter = 1_000u ) {
 			double currentError = Abs(2 * err);
 
 			double funcOut;
@@ -573,15 +778,15 @@ node_Vec:	{nodeLine_Vector}";
 				}
 			} catch ( DivideByZeroException ) { }
 
-			return (newBound, currentError);
+			return new Result(newBound, currentError);
 		}
 
-		public static (double, double) binary( Func<double, double> function, double left, double right, double err = 1E-5f, uint maxIter = 1_000u ) {
+		public static Result binary( Func<double, double> function, double left, double right, double err = 1E-5d, uint maxIter = 1_000u ) {
 			double X = Abs( 2 * err );
 			double midPoint = 0.0;
 
 			while ( Abs( X ) > err && maxIter-- >= 0 ) {
-				midPoint = .5f * ( left + right );
+				midPoint = .5d * ( left + right );
 				X = function( midPoint );
 
 				if ( X > 0 )
@@ -590,7 +795,51 @@ node_Vec:	{nodeLine_Vector}";
 					left = midPoint;
 			}
 
-			return (midPoint, Abs( X ));
+			return new Result(midPoint, Abs( X ));
+		}
+
+		public static Result section( Func<double, double> function, double start, double range, int steps, bool searchingForMin=true, double err = 1E-5d ) {
+			double bestInput, bestFuncValue, input, funcVal, stepSize;
+			(bestInput, bestFuncValue) = (0d, 0d);
+
+			/*	since the range gets readjusted after every iteration to:
+			 *		new_range = old_range / steps
+			 *	=>	range_of_nth_steps = inital_range / pow( steps, n )
+			 *	
+			 *	there exists a n (element of the Naturals) so that:
+			 *		err > inital_range / pow( steps, n )
+			 *	with err (element of the Real) being the Error and being greater than the range of the nth iteration
+			 *	
+			 *	thus,
+			 *	=>	pow( steps, n ) > inital_range / err
+			 *	=>	n * ln( steps ) > ln( inital_range / err )
+			 *	=>	n > ln( inital_range / err ) / ln( steps )
+			 *	
+			 *	=>	n >= ceil( ln( inital_range / err ) / ln( steps ) )
+			 *	
+			 *	Runtime is therefor roughtly: O( n / ln(n) )
+			 */
+			int n = (int) Ceiling( Log( range / err ) / Log( steps ) );
+
+			for ( int i = 0 ; i < n ; i++ ) {
+				stepSize = range / steps;
+				
+				for ( int step = 0 ; step <= steps ; step++ ) {
+					input = start + step * stepSize;
+					funcVal = function( input );
+
+					if ( ( searchingForMin && funcVal < bestFuncValue ) || ( !searchingForMin && funcVal > bestFuncValue ) ) {
+						(bestInput, bestFuncValue) = (input, funcVal);
+					}
+				}
+
+				// the adjusted search region is now centred around the best input and has now a range of the previous stepSize
+				start = bestInput - .5d * stepSize;
+				range = stepSize;
+			}
+
+			// ...*steps, since range is currently equal to the previous stepsize, and thus must be rescaled to be the prvious range
+			return new Result( Abs(range*steps), bestFuncValue, bestInput );
 		}
 
 
@@ -652,7 +901,7 @@ node_Vec:	{nodeLine_Vector}";
 			// Lagrange inversion theorem to solve the Eccentricity Anomaly
 			// depth is only n=5, => wich results at a max Error of +-9%, for an eccentricity of 0.8
 
-			double m = .5f * ( meanAnomaly + Constants.pi );
+			double m = .5d * ( meanAnomaly + Constants.pi );
 			double inputDiffrence = meanAnomaly - Orbit.meanAnomaly_from_eccentricityAnomaly( m, ecc );
 
 			double C_m = Cos( m );
@@ -660,10 +909,10 @@ node_Vec:	{nodeLine_Vector}";
 
 			double C_2m = C_m * C_m - S_m * S_m;
 
-			double base_denominator = ecc * C_m - 1f;
+			double base_denominator = ecc * C_m - 1d;
 			double denominator = base_denominator * base_denominator * base_denominator;
 
-			double c1 = 1f / ( 1f - ecc * C_m );
+			double c1 = 1d / ( 1d - ecc * C_m );
 			double c2 = ecc * S_m / denominator;
 			denominator *= base_denominator * base_denominator;
 
@@ -676,13 +925,13 @@ node_Vec:	{nodeLine_Vector}";
 			output += c1 * inputDiffrence;			// c1 / 1	= c1
 			inputDiffrence *= inputDiffrence;
 
-			output += .5f * c2 * inputDiffrence;	// c2 / 2	= .5f * c2
+			output += .5d * c2 * inputDiffrence;	// c2 / 2	= .5d * c2
 			inputDiffrence *= inputDiffrence;
 
-			output += .1667f * c3 * inputDiffrence; // c3 / 6	= .1667f * c3
+			output += .1667d * c3 * inputDiffrence; // c3 / 6	= .1667d * c3
 			inputDiffrence *= inputDiffrence;
 
-			output += .0417f * c4 * inputDiffrence; // c4 / 24	= .0417f * c4
+			output += .0417d * c4 * inputDiffrence; // c4 / 24	= .0417d * c4
 
 			return output;
 		}
@@ -691,58 +940,58 @@ node_Vec:	{nodeLine_Vector}";
 			uint newton_max_iter = MAX_ITERATION_STEPS; // the user set this to be the max steps for the newton algorithm
 			MAX_ITERATION_STEPS = 5u; // sets the the bassel_Jn max steps
 
-			(double E, double er) = newton(
+			Result re = newton(
 				baseFunc:		( double E ) => Orbit.meanAnomaly_from_eccentricityAnomaly( E, ecc ) - meanAnomaly,
 				derivativeFunc: ( double E ) => 1 - ecc*Cos( E ),
 				startValue:		bassel_eccAnomaly( meanAnomaly, ecc ),
 				err:			ERROR_THRESHOLD,
 				maxIter:		newton_max_iter
 			);
-			return E;
+			return re.value;
 		}
 
 		public static double eccAnomaly_LIT_Newton( double meanAnomaly, double ecc ) {
-			(double E, double er) = newton(
+			Result re = newton(
 				baseFunc:		( double E ) => Orbit.meanAnomaly_from_eccentricityAnomaly( E, ecc ) - meanAnomaly,
 				derivativeFunc: ( double E ) => 1 - ecc * Cos( E ),
 				startValue:		LIT_eccAnomaly_n5( meanAnomaly, ecc ),
 				err:			ERROR_THRESHOLD,
 				maxIter:		MAX_ITERATION_STEPS
 			);
-			return E;
+			return re.value;
 		}
 
 		public static double eccAnomaly_Newton( double meanAnomaly, double ecc, double startValue=Constants.pi ) {
-			(double E, double er) = newton(
+			Result re = newton(
 				baseFunc:		( double E ) => Orbit.meanAnomaly_from_eccentricityAnomaly( E, ecc ) - meanAnomaly,
 				derivativeFunc: ( double E ) => 1 - ecc * Cos( E ),
 				startValue:		startValue,
 				err:			ERROR_THRESHOLD,
 				maxIter:		MAX_ITERATION_STEPS
 			);
-			return E;
+			return re.value;
 		}
 
 		public static double eccAnomaly_Secant( double meanAnomaly, double ecc, double x0=0, double x1 =Constants.tau ) {
-			(double E, double er) = secant(
+			Result re = secant(
 				function:	( double E ) => Orbit.meanAnomaly_from_eccentricityAnomaly(E, ecc) - meanAnomaly,
 				bound0:		x0,
 				bound1:		x1,
 				err:		ERROR_THRESHOLD,
 				maxIter:	MAX_ITERATION_STEPS
 			);
-			return E;
+			return re.value;
 		}
 		
 		public static double eccAnomaly_Binary( double meanAnomaly, double ecc, double leftBound=0, double rightBound=Constants.tau ) {
-			(double E, double er) = binary(
+			Result re = binary(
 				function:	( double E ) => Orbit.meanAnomaly_from_eccentricityAnomaly(E, ecc) - meanAnomaly,
 				left:		leftBound,
 				right:		rightBound,
 				err:		ERROR_THRESHOLD,
 				maxIter:	MAX_ITERATION_STEPS
 			);
-			return E;
+			return re.value;
 		}
 	}
 }
