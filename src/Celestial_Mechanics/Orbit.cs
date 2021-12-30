@@ -192,6 +192,7 @@ namespace Celestial_Mechanics {
 		/// <param name="sma">Semi-Major-Axis of Orbit in [m]</param>
 		/// <param name="lan">Longitude of Ascending Node in [degrees]</param>
 		/// <param name="argOfPer">Argument of Periapsis in [degrees]</param>
+		/// <param name="mEp">Mean Anomaly in [Degrees] at Epoch</param>
 		/// <param name="tEpoch">Arbitrary timestamp to calculate time dependend values of this orbit (e.g. position, velocity etc.)</param>
 		/// <param name="body"><see cref="Body"/> to be orbited around</param>
 		public Orbit( double inc, double ecc, double sma, double lan, double argOfPer, double mEp, double tEpoch, Body body ) {
@@ -377,7 +378,9 @@ namespace Celestial_Mechanics {
 
 		#region two_Orbit_Methods
 		public struct PointsOfInterest {
+			/// <summary>I, J being the angles in [degrees] of interest</summary>
 			public double? I, J;
+			public bool hasValues { get => I.HasValue && J.HasValue; }
 		}
 
 		public static double getDistance_at_Time( Orbit A, Orbit B, double UT ) {
@@ -388,13 +391,56 @@ namespace Celestial_Mechanics {
 		}
 
 		public static PointsOfInterest getIntersectionPoints( Orbit A, Orbit B ) {
-			return new PointsOfInterest { I = 0, J = 0 };
+			double eta = Constants.rad * (B.argumentOfPeriapsis - A.argumentOfPeriapsis);
+
+			PointsOfInterest poi = solveTheta(
+				 A.eccentricity * B.angularMomentum * B.angularMomentum - B.eccentricity * A.angularMomentum * A.angularMomentum * Cos( eta ),
+				-B.eccentricity * A.angularMomentum * A.angularMomentum * Sin( eta ),
+				 A.angularMomentum * A.angularMomentum - B.angularMomentum * B.angularMomentum
+			);
+
+			poi.I = ( poi.I + 360 ) % 360;
+			poi.J = ( poi.J + 360 ) % 360;
+
+			return poi;
 		}
 		
 		public static PointsOfInterest getTangentialPoints( Orbit A, Orbit B ) {
-			return new PointsOfInterest { I = 0, J = 0 };
+			double eta = Constants.rad * (B.argumentOfPeriapsis - A.argumentOfPeriapsis);
+
+			PointsOfInterest poi = solveTheta(
+				B.eccentricity * Sin(eta),
+				A.eccentricity - B.eccentricity * Cos(eta),
+				A.eccentricity * B.eccentricity * Sin( eta )
+			);
+
+			poi.I = ( poi.I + 360 ) % 360;
+			poi.J = ( poi.J + 360 ) % 360;
+
+			return poi;
 		}
 
+
+		public static PointsOfInterest solveTheta( double a, double b, double c ) {
+			// solve the angle theta in [degrees] for the equation of the form:
+			// a * cos(theta) + b * sin(theta) = c
+
+			if ( a == 0d )
+				return new PointsOfInterest { };
+
+			double phi = Atan( b / a );
+			double cosContent = c / a * Cos(phi);
+
+			if ( cosContent < -1d || cosContent > 1d )
+				return new PointsOfInterest { };
+
+			cosContent = Acos( cosContent );
+			
+			return new PointsOfInterest { 
+				I = ( phi + cosContent ) * Constants.deg, 
+				J = ( phi - cosContent ) * Constants.deg 
+			};
+		}
 
 		#endregion
 

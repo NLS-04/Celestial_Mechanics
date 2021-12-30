@@ -6,47 +6,11 @@ using Vectors;
 namespace Celestial_Mechanics {
 	public class Test_CM {
 		public static void Main( string[] args ) {
-			//Orbit a = new Orbit( 1000 * new Vector( -6045, -3490, 2500 ), new Vector( -3457, 6618, 2533 ), 0f, Body.EARTH );
-			//Orbit b = new Orbit( a.inclination, a.eccentricity, a.semiMajorAxis, a.longitudeOfAscendingNode, a.argumentOfPeriapsis, a.meanAnomaly_At_Epoch, a.epoch, a.body );
-			//Console.WriteLine( a.staticInformation() );
-			//Console.WriteLine();
-			//Console.WriteLine( b.staticInformation() );
+			Orbit a = new Orbit( 1000 * new Vector( -6045, -3490, 2500 ), new Vector( -3457, 6618, 2533 ), 0f, Body.EARTH );
+			Orbit b = new Orbit( a.inclination, a.eccentricity, a.semiMajorAxis, a.longitudeOfAscendingNode, a.argumentOfPeriapsis, a.meanAnomaly_At_Epoch, a.epoch, a.body );
 
-			//Console.WriteLine( a.Equals( b ) );
-
-			//Solver.Result re = Solver.section( ( x ) => ( x - 1 ) * ( x - 2 ) * ( x - 5 ), 1d, 4d, 30, false );
-			//Console.WriteLine(re);
-
-			//Console.WriteLine( Orbit.meanAnomaly( 120, .37255f ) );
-			//Console.WriteLine( Orbit.trueAnomaly_to_time( 120, .37255f, 18_834 ) );
-
-			_ = BenchmarkRunner.Run<Tests_other>();
-
-
-			//float maxIntervals = 100f;
-			//float ecc = 0f;
-			//float me = Constants.pi * 5f/7f;
-
-			//float newton, secant, binary;
-
-			//const int space = -10;
-
-			//string formatStr = "{0," + space + "} | {1," + space + "} | {2," + space + "} | {3," + space + "} | ";
-
-			//Console.WriteLine( String.Format( formatStr, "ecc", "Newton", "Secant", "Binary") );
-			//for ( int i = 1 ; i < maxIntervals ; i++ ) {
-			//	ecc = i / maxIntervals;
-
-			//	newton = Solver.eccAnomaly_Newton( me, ecc );
-			//	secant = Solver.eccAnomaly_Secant( me, ecc );
-			//	binary = Solver.eccAnomaly_Binary( me, ecc );
-
-			//	Console.WriteLine( String.Format( formatStr, ecc, newton, secant, binary ) );
-			//}
-
-			//for ( double t = 0 ; t <= a.period ; t += a.period / 100f ) {
-			//	Console.WriteLine( String.Format( "{0, -10} | {1, -10}", t, a.trueAnomaly_at_time(t)*Constants.deg ) );
-			//}
+			//_ = BenchmarkRunner.Run<Tests_other>();
+			//_ = BenchmarkRunner.Run<Tests>();
 		}
 	}
 
