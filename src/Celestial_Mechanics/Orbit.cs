@@ -18,9 +18,11 @@ namespace Celestial_Mechanics {
 	}
 
 	/// <summary>
-	/// Frame Of Refrences:
-	///		=>	ECI		('Earth'-Centered-Inertial): is a inertial Refrence Frame, on which all orbit parameters are defined
-	///		=>	ECEF	('Earth'-Centered-'Eaerth'-Fixed): is a non-inertial Refrence Frame, which is usefull to describe positions relative to a Body's surface
+	/// <para>
+	/// Frame Of Refrences:<br />
+	///		=>	ECI		('Earth'-Centered-Inertial): is a inertial Refrence Frame, on which all orbit parameters are defined<br />
+	///		=>	ECEF	('Earth'-Centered-'Eaerth'-Fixed): is a non-inertial Refrence Frame, which is usefull to describe positions relative to a Body's surface<br />
+	/// </para>
 	/// </summary>
 	public class Body {
 		// mu = G*M
@@ -35,9 +37,9 @@ namespace Celestial_Mechanics {
 		public Orbit? orbit;
 
 
-		public readonly double rotationPeriod;
-		public readonly double rotationSpeed;
-		public readonly Vector rotationVector;
+		public readonly double rotationPeriod;	// time in [seconds] that it takes to rotate this body by 360°
+		public readonly double rotationSpeed;	// rate of change of angle in [radians] per time in [seconds] => [radians/second]
+		public readonly Vector rotationVector;	// normalized Vector pointing in the direction of rotation
 
 		/// <summary>This <see cref="Direction"/> is defined to be this Body's ECI Frame of refrence at <see cref="Orbit.TimeMode.UT"/> <see langword="0.0d"/>, thus all derived orbit parameters are based on this (inertial) ECI Frame </summary>
 		public readonly Direction ECI_Orientation = Direction.defaultDirection;
@@ -160,22 +162,23 @@ namespace Celestial_Mechanics {
 	}
 
 	/// <summary>
+	///	<para>
+	///	-> LAN (longitude of Ascending Node) measured to X-Axis of the Body's initial ECI-Frame<br />
+	/// -> Inclination measured to XY-Plane of the Body's initial ECI-Frame<br />
+	/// -> Body's North == Z-Axis of the Body's initial ECI-Frame
+	/// </para>
+	/// 
+	/// <remarks>
+	/// All (readable) angle Values are in [DEGREES] but are internally converted and calculated as [RADIANS]
+	/// </remarks>
 	/// 
 	/// </summary>
 	public class Orbit {
-		/* LAN (longitude of Ascending Node) measured to X-Axis of the Body's initial ECI-Frame
-		 * inclination measured to XY-Plane of the Body's initial ECI-Frame
-		 * Body's North == Z-Axis
-		 */
-
-		/* All (readable) angle Values are in [DEGREES] but are internally converted and calculated as [RADIANS] */
 
 		public Body body;
 
-		// vectors are normalized, values are stored at their associativ double variable
-		public readonly Vector eccentricity_Vector;
-		public readonly Vector angularMomentum_Vector;
-		public readonly Vector nodeLine_Vector;
+		/// <summary>The Vector is normalized, and its actual magnitude is separately stored at an associativ variable</summary>
+		public readonly Vector eccentricity_Vector, angularMomentum_Vector, nodeLine_Vector;
 
 		public readonly double apoapsis, periapsis, semiMajorAxis, semiMinorAxis;
 		public readonly double inclination, eccentricity, angularMomentum, longitudeOfAscendingNode, argumentOfPeriapsis;
@@ -183,6 +186,7 @@ namespace Celestial_Mechanics {
 
 		public ManeuverNode? maneuverNode { get; set; }
 
+		/// <summary><see cref="Direction.forward"/> = prograde Direction; <see cref="Direction.side"/> = radial (out) Direction; <see cref="Direction.top"/> = normal Direction</summary>
 		private readonly Direction dir_at_periapsis;
 
 		#region constructors
@@ -220,30 +224,29 @@ namespace Celestial_Mechanics {
 
 			meanAnomaly_At_Epoch = mEp;
 
-			dir_at_periapsis = Direction.lookDirUp( eccentricity_Vector, angularMomentum_Vector );
+			dir_at_periapsis = new Direction( -Vector.cross( eccentricity_Vector, angularMomentum_Vector ), eccentricity_Vector, angularMomentum_Vector );
 		}
 
 		/// <summary><see cref="Orbit"/> constructor for general Orbits, orientated in 3D, based on an initial position and velocity</summary>
-		/// <param name="pos">initial position of satellite in [m]</param>
-		/// <param name="vel">initial velocity of satellite in [m/s]</param>
+		/// <param name="pos">initial position of satellite in [m] in Body's [ECI]-Frame</param>
+		/// <param name="vel">initial velocity of satellite in [m/s] in Body's [ECI]-Frame</param>
 		/// <param name="tEpoch">Arbitrary timestamp to calculate time dependend parameters of this orbit (e.g. position, velocity, flight angle etc.)</param>
 		/// <param name="body"><see cref="Body"/> to be orbited around</param>
 		public Orbit( Vector pos, Vector vel, double tEpoch, Body body ) {
 			epoch     = tEpoch;
 			this.body = body;
 
-			angularMomentum_Vector = Vector.cross( pos, vel );
-			angularMomentum = angularMomentum_Vector.mag();
+			angularMomentum_Vector = Vector.cross( pos, vel ).normalized();
+			angularMomentum        = angularMomentum_Vector.mag();
 
-			inclination = Vector.vang(angularMomentum_Vector, body.ECI_Orientation.top) * Constants.deg;
+			inclination = Vector.vang( angularMomentum_Vector, Vector.up ) * Constants.deg;
 
-			nodeLine_Vector = Vector.cross( body.ECI_Orientation.top, angularMomentum_Vector );
+			nodeLine_Vector = Vector.cross( Vector.up, angularMomentum_Vector ).normalized();
 
-			longitudeOfAscendingNode = Acos( nodeLine_Vector.x / nodeLine_Vector.mag() ) * Constants.deg;
-			longitudeOfAscendingNode = nodeLine_Vector.y < 0 ? 360 - longitudeOfAscendingNode : longitudeOfAscendingNode;
+			longitudeOfAscendingNode = Atan2( nodeLine_Vector.y, nodeLine_Vector.x ) * Constants.deg;
 
-			eccentricity_Vector = ( 1 / body.mu ) * ( Vector.cross( vel, angularMomentum_Vector ) - body.mu * pos.normalized() );
-			eccentricity = eccentricity_Vector.mag();
+			eccentricity_Vector = ( angularMomentum / body.mu ) * ( Vector.cross( vel, angularMomentum_Vector ) - body.mu * pos.normalized() );
+			eccentricity        = eccentricity_Vector.mag();
 
 			argumentOfPeriapsis = Vector.vang( nodeLine_Vector, eccentricity_Vector ) * Constants.deg;
 			argumentOfPeriapsis = eccentricity_Vector.z < 0 ? 360 - argumentOfPeriapsis : argumentOfPeriapsis;
@@ -251,19 +254,15 @@ namespace Celestial_Mechanics {
 			apoapsis  = altitude( 180 );
 			periapsis = altitude(   0 );
 
-			semiMajorAxis = .5f * ( apoapsis + periapsis );
+			semiMajorAxis = .5d * ( apoapsis + periapsis );
 			semiMinorAxis = calculate_semiMinorAxis( semiMajorAxis, eccentricity );
-			period = calculate_Period( semiMajorAxis, body.mu );
+			period        = calculate_Period( semiMajorAxis, body.mu );
 
-			semi_latus_rectum = angularMomentum * angularMomentum / body.mu;
-
-			nodeLine_Vector = nodeLine_Vector.normalized();
-			angularMomentum_Vector = angularMomentum_Vector.normalized();
-			eccentricity_Vector = eccentricity_Vector.normalized();
-
+			semi_latus_rectum    = angularMomentum * angularMomentum / body.mu;
+			eccentricity_Vector  = eccentricity_Vector.normalized();
 			meanAnomaly_At_Epoch = meanAnomaly( Vector.vang( body.ECI_Orientation.forward, eccentricity_Vector ) * Constants.deg );
 
-			dir_at_periapsis = Direction.lookDirUp( eccentricity_Vector, angularMomentum_Vector );
+			dir_at_periapsis = new Direction( -Vector.cross( eccentricity_Vector, angularMomentum_Vector ), eccentricity_Vector, angularMomentum_Vector );
 		}
 		#endregion
 
@@ -483,6 +482,9 @@ namespace Celestial_Mechanics {
 			return (tangential_velocity( trueAnomaly ), radial_velocity( trueAnomaly ));
 		}
 
+		/// <summary>calculating the <see cref="GeoPosition"/> of an Object on this initial <see cref="Orbit"/> at a given Time</summary>
+		/// <param name="UT">Time in [seconds] in [<see cref="TimeMode.UT"/>]</param>
+		/// <returns>The <see cref="GeoPosition"/> at this UT</returns>
 		public GeoPosition GetGeoPosition( double UT ) {
 			return new GeoPosition( position_at_time( UT, TimeMode.UT ), body );
 		}
@@ -557,6 +559,25 @@ namespace Celestial_Mechanics {
 
 			return (double) methodinfo.Invoke( null, new object[] { Me, eccentricity } ) * Constants.deg;
 		}
+
+		/// <summary>Calculating the <see cref="Orbit"/> an Object on this initial <see cref="Orbit"/> will end up, after performing all up coming (up tot that UT) Maneuver Events </summary>
+		/// <param name="UT">Time in [seconds] in [<see cref="TimeMode.UT"/>]</param>
+		/// <returns>The <see cref="Orbit"/> at this UT</returns>
+		public Orbit get_Orbit_at_time( double UT ) {
+			Orbit finalOrbit = this;
+
+			while ( true ) {
+				if ( finalOrbit.maneuverNode == null )
+					break;
+
+				if ( UT < finalOrbit.maneuverNode.time )
+					break;
+
+				finalOrbit = finalOrbit.maneuverNode.nextOrbit;
+			}
+
+			return finalOrbit;
+		}
 		#endregion
 
 
@@ -588,35 +609,63 @@ namespace Celestial_Mechanics {
 		/// <returns>The Velocity 3d-Vector [meters/second] in (this body's) [ECI]-Frame</returns>
 		public Vector velocity_at_trueAnomaly( double trueAnomaly ) {
 			Direction dir = direction_at_trueAnomaly( trueAnomaly );
-			Vector radial_out_vel = radial_velocity( trueAnomaly ) * dir.top;
-			Vector tangential_vel = tangential_velocity( trueAnomaly ) * Vector.cross( angularMomentum_Vector, dir.forward );
+			Vector radial_out_vel = radial_velocity( trueAnomaly ) * dir.side;
+			Vector tangential_vel = tangential_velocity( trueAnomaly ) * dir.forward;
 			return radial_out_vel + tangential_vel;
 		}
 
 
-		/// <summary>Calculate the Position Vector at a given Time</summary>
+		/// <summary>Calculate the Position Vector at a given Time; Is the <see cref="TimeMode"/> =<see cref="TimeMode.UT"/> then all up coming (up to that UT) Maneuver Events are being regared</summary>
 		/// <param name="time">Time in [seconds]</param>
 		/// <param name="TM">The Time mode controls how the time value should be interpreted</param>
 		/// <returns>The Position 3d-Vector in [meters] in (this body's) [ECI]-Frame</returns>
-		public Vector position_at_time( double time, TimeMode TM=TimeMode.UT ) {
-			return position_at_trueAnomaly( trueAnomaly_at_time( time, TM ) );
+		public Vector position_at_time( double time, TimeMode TM = TimeMode.UT ) {
+			switch ( TM ) {
+				case TimeMode.UT:
+					Orbit finalOrbit = get_Orbit_at_time( time );
+					return finalOrbit.position_at_trueAnomaly( finalOrbit.trueAnomaly_at_time( time, TimeMode.UT ) );
+			
+				case TimeMode.PeriapsRelativ:
+					return position_at_trueAnomaly( trueAnomaly_at_time( time, TimeMode.PeriapsRelativ ) );
+				
+				default:
+					return null;
+			}
 		}
 
-		/// <summary>Calculate the Velocity Vector at a given Time</summary>
+		/// <summary>Calculate the Velocity Vector at a given Time; Is the <see cref="TimeMode"/> =<see cref="TimeMode.UT"/> then all up coming (up to that UT) Maneuver Events are being regared</summary>
 		/// <param name="time">Time in [seconds]</param>
 		/// <param name="TM">The Time mode controls how the time value should be interpreted</param>
 		/// <returns>The Velocity 3d-Vector [meters/second] in (this body's) [ECI]-Frame</returns>
 		public Vector velocity_at_time( double time, TimeMode TM=TimeMode.UT ) {
-			return velocity_at_trueAnomaly( trueAnomaly_at_time( time, TM ) );
+			switch ( TM ) {
+				case TimeMode.UT:
+					Orbit finalOrbit = get_Orbit_at_time( time );
+					return finalOrbit.velocity_at_trueAnomaly( finalOrbit.trueAnomaly_at_time( time, TimeMode.UT ) );
+
+				case TimeMode.PeriapsRelativ:
+					return velocity_at_trueAnomaly( trueAnomaly_at_time( time, TimeMode.PeriapsRelativ ) );
+
+				default:
+					return null;
+			}
 		}
 
 
+		/// <summary>Calculate the World-Position-Vector at a given Time; regarding all up coming (up to that UT) Maneuver Events</summary>
+		/// <param name="UT">Time in [seconds] in [<see cref="TimeMode.UT"/>]</param>
+		/// <returns>The World-Position 3d-Vector in [meters] in [World]-Frame</returns>
 		public Vector position_world_at_time( double UT ) {
-			return body.convert_LocalToWorld( UT, position_at_time( UT, TimeMode.UT ) );
+			Orbit orb = get_Orbit_at_time( UT );
+			return orb.body.convert_LocalToWorld( UT, orb.position_at_time( UT, TimeMode.UT ) );
 		}
 
+		/// <summary>Calculate the World-Velocity-Vector at a given Time; regarding all up coming (up to that UT) Maneuver Events</summary>
+		/// <param name="UT">Time in [seconds] in [<see cref="TimeMode.UT"/>]</param>
+		/// <returns>The World-Velocity 3d-Vector in [meters] in [World]-Frame</returns>
 		public Vector velocity_world_at_time( double UT ) {
-			return body.convert_LocalToWorld( UT, velocity_at_time( UT, TimeMode.UT ) );
+			Orbit orb = get_Orbit_at_time( UT );
+			return orb.body.convert_LocalToWorld( UT, orb.velocity_at_time( UT, TimeMode.UT ) );
 		}
 		#endregion
 
@@ -693,7 +742,6 @@ node_Vec:	{nodeLine_Vector}";
 		}
 	}
 
-
 	public struct Direction {
 		public readonly static Direction defaultDirection = new Direction( Vector.forward, Vector.side, Vector.up );
 
@@ -742,28 +790,30 @@ node_Vec:	{nodeLine_Vector}";
 
 		public readonly Orbit nextOrbit;
 
-		public ManeuverNode( Orbit currentOrbit, double time, double radial, double normal, double prograde ) {
-			this.time     = time;
+		public ManeuverNode( Orbit currentOrbit, double UT, double radial, double normal, double prograde ) {
+			this.time     = UT;
 			this.radial   = radial;
 			this.normal   = normal;
 			this.prograde = prograde;
 
-			Direction dir_at_mn = currentOrbit.direction_at_trueAnomaly( currentOrbit.trueAnomaly_at_time(time) );
+			Direction dir_at_mn = currentOrbit.direction_at_trueAnomaly( currentOrbit.trueAnomaly_at_time(UT) );
 			
 			burnVector = dir_at_mn.forward * prograde + dir_at_mn.top * normal + dir_at_mn.side * radial;
 			deltaV = burnVector.mag();
+
+			nextOrbit = new Orbit( currentOrbit.position_at_time( UT, Orbit.TimeMode.UT ), burnVector + currentOrbit.velocity_at_time( UT, Orbit.TimeMode.UT ), UT, currentOrbit.body );
 		}
 
-		public ManeuverNode( Orbit currentOrbit, double time, Vector scaled_burnVector ) {
+		public ManeuverNode( Orbit currentOrbit, double UT, Vector scaled_burnVector ) {
 			this.burnVector = scaled_burnVector;
-			this.time = time;
+			this.time = UT;
 
 			deltaV = burnVector.mag();
 
-			Direction dir_at_mn = currentOrbit.direction_at_trueAnomaly( currentOrbit.trueAnomaly_at_time(time) );
-			this.radial   = Vector.dot( burnVector, dir_at_mn.side );
-			this.normal   =	Vector.dot( burnVector, dir_at_mn.top );
-			this.prograde = Vector.dot( burnVector, dir_at_mn.forward );
+			Direction dir_at_mn = currentOrbit.direction_at_trueAnomaly( currentOrbit.trueAnomaly_at_time(UT) );
+			(prograde, radial, normal) = dir_at_mn.worldToLocal( burnVector );
+
+			nextOrbit = new Orbit( currentOrbit.position_at_time( UT, Orbit.TimeMode.UT ), burnVector + currentOrbit.velocity_at_time( UT, Orbit.TimeMode.UT ), UT, currentOrbit.body );
 		}
 	}
 

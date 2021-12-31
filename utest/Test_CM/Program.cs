@@ -9,6 +9,21 @@ namespace Celestial_Mechanics {
 			Orbit a = new Orbit( 1000 * new Vector( -6045, -3490, 2500 ), new Vector( -3457, 6618, 2533 ), 0f, Body.EARTH );
 			Orbit b = new Orbit( a.inclination, a.eccentricity, a.semiMajorAxis, a.longitudeOfAscendingNode, a.argumentOfPeriapsis, a.meanAnomaly_At_Epoch, a.epoch, a.body );
 
+			Console.WriteLine(a.staticInformation());
+			Console.WriteLine("");
+			Console.WriteLine(b.staticInformation());
+			Console.WriteLine("");
+			Console.WriteLine(a == b);
+
+			int i = 0;
+			while (true) {
+				Console.WriteLine(i);
+				if ( i > 10 )
+					break;
+				i++;
+			}
+			Console.WriteLine("broke out of while loop");
+
 			//_ = BenchmarkRunner.Run<Tests_other>();
 			//_ = BenchmarkRunner.Run<Tests>();
 		}
