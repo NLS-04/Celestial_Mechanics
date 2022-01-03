@@ -34,7 +34,11 @@ namespace Celestial_Mechanics {
 		public readonly double radius;
 
 
-		public Orbit? orbit;
+		public  Orbit? orbit { get => __orbit; }
+		private Orbit? __orbit;
+
+		public  double? sphereOfInfluence { get => __sphereOfInfluence; }
+		private double? __sphereOfInfluence;
 
 
 		public readonly double rotationPeriod;	// time in [seconds] that it takes to rotate this body by 360°
@@ -124,6 +128,11 @@ namespace Celestial_Mechanics {
 
 		public static bool operator ==( Body a, Body b ) => a.Equals( b );
 		public static bool operator !=( Body a, Body b ) =>!a.Equals( b );
+
+		public void setOrbit( Orbit orb ) {
+			__orbit = orb;
+			__sphereOfInfluence = orbit.semiMajorAxis * Pow( mass / orbit.body.mass, 2d / 5d );
+		}
 
 
 		public Direction getDirectionAtTime( double UT ) {
@@ -330,6 +339,7 @@ namespace Celestial_Mechanics {
 			return Atan( ecc * Sin( trueAnomaly ) / ( 1 + ecc * Cos( trueAnomaly ) ) ) * Constants.deg;
 		}
 
+
 		#region Orbit position determination
 		/// <summary>Calculate the Eccentricity Anomaly for a given True Anomaly</summary>
 		/// <param name="trueAnomaly">Angle in [degrees] of an position to the periapsis</param>
@@ -362,7 +372,7 @@ namespace Celestial_Mechanics {
 		/// <param name="period">The orbits Period time in [seconds]</param>
 		/// <returns>The time that passed since periapsis passage in [seconds]</returns>
 		public static double meanAnomaly_to_time( double meanAnomaly, double period ) {
-			return period * meanAnomaly*Constants.rad / Constants.tau;
+			return period * meanAnomaly * Constants.rad / Constants.tau;
 		}
 
 		/// <summary>Calculate the time since periapsis for a given True Anomaly</summary>
@@ -375,19 +385,34 @@ namespace Celestial_Mechanics {
 		}
 		#endregion
 
-		#region two_Orbit_Methods
+		#region Two Orbit Methods
 		public struct PointsOfInterest {
 			/// <summary>I, J being the angles in [degrees] of interest</summary>
 			public double? I, J;
 			public bool hasValues { get => I.HasValue && J.HasValue; }
 		}
 
-		public static double getDistance_at_Time( Orbit A, Orbit B, double UT ) {
-			Vector posA = A.position_world_at_time( UT );
-			Vector posB = B.position_world_at_time( UT );
+		public static PointsOfInterest solveTheta( double a, double b, double c ) {
+			// solve the angle theta in [degrees] for the equation of the form:
+			// a * cos(theta) + b * sin(theta) = c
 
-			return ( posA - posB ).mag();
+			if ( a == 0d )
+				return new PointsOfInterest { };
+
+			double phi = Atan( b / a );
+			double cosContent = c / a * Cos(phi);
+
+			if ( cosContent < -1d || cosContent > 1d )
+				return new PointsOfInterest { };
+
+			cosContent = Acos( cosContent );
+			
+			return new PointsOfInterest { 
+				I = ( phi + cosContent ) * Constants.deg, 
+				J = ( phi - cosContent ) * Constants.deg 
+			};
 		}
+
 
 		public static PointsOfInterest getIntersectionPoints( Orbit A, Orbit B ) {
 			double eta = Constants.rad * (B.argumentOfPeriapsis - A.argumentOfPeriapsis);
@@ -420,27 +445,17 @@ namespace Celestial_Mechanics {
 		}
 
 
-		public static PointsOfInterest solveTheta( double a, double b, double c ) {
-			// solve the angle theta in [degrees] for the equation of the form:
-			// a * cos(theta) + b * sin(theta) = c
+		public static double getDistance_at_Time( Orbit A, Orbit B, double UT ) {
+			Vector posA = A.position_world_at_time( UT );
+			Vector posB = B.position_world_at_time( UT );
 
-			if ( a == 0d )
-				return new PointsOfInterest { };
-
-			double phi = Atan( b / a );
-			double cosContent = c / a * Cos(phi);
-
-			if ( cosContent < -1d || cosContent > 1d )
-				return new PointsOfInterest { };
-
-			cosContent = Acos( cosContent );
-			
-			return new PointsOfInterest { 
-				I = ( phi + cosContent ) * Constants.deg, 
-				J = ( phi - cosContent ) * Constants.deg 
-			};
+			return ( posA - posB ).mag();
 		}
 
+		public static (double time, Vector pos) get_closest_Approach( Orbit A, Orbit B, (double start, double range) timeBoundary/*, double maxDistance=10_000d*/ ) {
+			Solver.Result res = Solver.section( (double UT) => Orbit.getDistance_at_Time( A, B, UT ), timeBoundary.start, timeBoundary.range, 3 );
+			return ( (double) res.input, A.position_world_at_time( (double) res.input ) );
+		}
 		#endregion
 
 		#endregion
@@ -527,6 +542,15 @@ namespace Celestial_Mechanics {
 			return trueAnomaly_to_time( trueAnomaly, eccentricity, period );
 		}
 
+		/// <summary>Calculates the time it takes to transvers between two True Anomalies for an Satelite on this Orbit</summary>
+		/// <param name="tA_from">Angle in [degrees] of an position to the periapsis</param>
+		/// <param name="tA_to">Angle in [degrees] of an position to the periapsis</param>
+		/// <returns>the delta Time in [seconds]</returns>
+		public double get_deltaTime_of_trueAnomalies( double tA_from, double tA_to ) {
+			double dT = trueAnomaly_to_time( tA_to ) - trueAnomaly_to_time( tA_from );
+			return ( dT + period ) % period;
+		}
+
 		
 		/// <summary>Calculate the Mean Anomaly at a given time</summary>
 		/// <param name="time">Time in [seconds]</param>
@@ -586,6 +610,7 @@ namespace Celestial_Mechanics {
 		public Direction direction_at_trueAnomaly( double trueAnomaly ) {
 			return dir_at_periapsis.angleAxis( angularMomentum_Vector, trueAnomaly );
 		}
+
 
 		#region State Vector methods
 		/// <summary>Calculate the normalized Position Vector (e.g. the direction) at a given True Anomaly</summary>
@@ -896,7 +921,8 @@ node_Vec:	{nodeLine_Vector}";
 
 		public static Result section( Func<double, double> function, double start, double range, int steps, bool searchingForMin=true, double err = 1E-5d ) {
 			double bestInput, bestFuncValue, input, funcVal, stepSize;
-			(bestInput, bestFuncValue) = (0d, 0d);
+			bestInput = start;
+			bestFuncValue = searchingForMin ? double.MaxValue : double.MinValue;
 
 			/*	since the range gets readjusted after every iteration to:
 			 *		new_range = old_range / steps
