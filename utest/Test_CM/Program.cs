@@ -1,7 +1,11 @@
 ﻿using System;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
+
 using Vectors;
+using Directions;
+
+using Solver = SolverAlgorithms.Solver;
 
 namespace Celestial_Mechanics {
 	public class Test_CM {
